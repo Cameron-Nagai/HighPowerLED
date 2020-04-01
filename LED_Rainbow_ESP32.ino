@@ -98,7 +98,7 @@ int redVal = black[0];
 int grnVal = black[1]; 
 int bluVal = black[2];
 
-int wait = 2;      // 10ms internal crossFade delay; increase for slower fades
+int wait = 10;      // 10ms internal crossFade delay; increase for slower fades
 int hold = 0;       // Optional hold when a color is complete, before the next crossFade
 int DEBUG = 1;      // DEBUG counter; if set to 1, will write values back via serial
 int loopCount = 60; // How often should DEBUG report?
@@ -176,16 +176,51 @@ void setup()
     // If you have to do something more involved here set a flag and process it in your main loop.
         
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
-    if ( (strcmp(device_name, rainbowWord) == 0) ) {
+      if ( (strcmp(device_name, rainbowWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
       Serial.println("Rainbow switched on by Alexa");
-      //digitalWrite(RELAY_PIN_1, !digitalRead(RELAY_PIN_1));
-      if (state) {
+        if (state) {
         isRainbow = true;
-      } else {
-        isRainbow = false;
-      }
+      } 
     }
+	    else {
+	        isRainbow = false;
+	      }
+
+      if ( (strcmp(device_name, redWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("Red switched on by Alexa");
+        if (state) {
+        isRed = true;
+      } 
+    }
+		else {
+	        isRed = false;
+	      }
+
+      if ( (strcmp(device_name, greenWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("Green switched on by Alexa");
+        if (state) {
+        isGreen = true;
+      } 
+    }
+	    else {
+	        isGreen = false;
+	      }
+
+      if ( (strcmp(device_name, blueWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("Blue switched on by Alexa");
+        if (state) {
+        isBlue = true;
+      } 
+    }
+	    else {
+	        isBlue = false;
+	      }
+
+
    
   });
 
@@ -203,10 +238,7 @@ void setup()
   ledcAttachPin(bluPin, bluePWMChannel);
   ledcAttachPin(whitePin, whitePWMChannel);
 
-  // pinMode(redPin, OUTPUT);   // sets the pins as output
-  // pinMode(grnPin, OUTPUT);   
-  // pinMode(bluPin, OUTPUT); 
-  // pinMode(whitePin, OUTPUT);
+
 
 
 }
@@ -217,17 +249,55 @@ void loop()
   fauxmo.handle();
 
   if (isRainbow == true) {
+	Serial.println("Rainbow is true");
+  }
+ 
+  if (isRed == true) {
+  	Serial.println("red is true");
+  }
+
+
+  else if (isGreen == true) {
+  	Serial.println("green is true");
+  }
+
+   else if (isBlue == true) {
+  	Serial.println("blue is true");
+  }
+
+  else {
+  	Serial.println("black is black");
+
+  }
+
+
+
+  if (isRainbow == true) {
   crossFade(red);
   crossFade(green);
   crossFade(blue);
   crossFade(yellow);
+
   }
-  if (isRainbow == false) {
-  	redVal = black[0];
-  	grnVal = black[0];
-  	bluVal = black[0];
-;
+ 
+  else if (isRed == true) {
+  	color("red");
+
   }
+
+  else if (isGreen == true) {
+  	color("green");
+  }
+
+  else if (isBlue == true) {
+  	color ("blue");
+  }
+
+  else {
+  	color("black");
+
+  }
+
   if (repeat) { // Do we loop a finite number of times?
     j += 1;
     if (j >= repeat) { // Are we there yet?
@@ -305,17 +375,50 @@ int calculateVal(int step, int val, int i) {
 *  the color values to the correct pins.
 */
 
+void color(String color) {
+
+	if (color == "black") {
+		ledcWrite (redPWMChannel, 0);
+		ledcWrite (greenPWMChannel, 0);
+		ledcWrite (bluePWMChannel, 0);
+
+	}
+
+	else if (color == "red") {
+		ledcWrite (redPWMChannel, 255);
+		ledcWrite (greenPWMChannel, 0);
+		ledcWrite (bluePWMChannel, 0);
+
+
+	}
+	else if (color == "green") {
+		ledcWrite (redPWMChannel, 0);
+		ledcWrite (greenPWMChannel, 255);
+		ledcWrite (bluePWMChannel, 0);
+
+
+	}
+
+	else if (color == "blue") {
+		ledcWrite (redPWMChannel, 0);
+		ledcWrite (greenPWMChannel, 0);
+		ledcWrite (bluePWMChannel, 255);
+
+
+	}
+}
+
 void crossFade(int color[3]) {
   // Convert to 0-255
   int R = (color[0] * 255) / 100;
   int G = (color[1] * 255) / 100;
   int B = (color[2] * 255) / 100;
-
+ 
   int stepR = calculateStep(prevR, R);
   int stepG = calculateStep(prevG, G); 
   int stepB = calculateStep(prevB, B);
-
-  for (int i = 0; i <= 1020; i++) {
+  
+  for (int i = 0; i <= 1020 && isRainbow == true; i++) {
     redVal = calculateVal(stepR, redVal, i);
     grnVal = calculateVal(stepG, grnVal, i);
     bluVal = calculateVal(stepB, bluVal, i);
@@ -332,14 +435,14 @@ void crossFade(int color[3]) {
 
     if (DEBUG) { // If we want serial output, print it at the 
       if (i == 0 or i % loopCount == 0) { // beginning, and every loopCount times
-        Serial.print("Loop/RGB: #");
-        Serial.print(i);
-        Serial.print(" | ");
-        Serial.print(redVal);
-        Serial.print(" / ");
-        Serial.print(grnVal);
-        Serial.print(" / ");  
-        Serial.println(bluVal); 
+        // Serial.print("Loop/RGB: #");
+        // Serial.print(i);
+        // Serial.print(" | ");
+        // Serial.print(redVal);
+        // Serial.print(" / ");
+        // Serial.print(grnVal);
+        // Serial.print(" / ");  
+        // Serial.println(bluVal); 
       } 
       DEBUG += 1;
     }
