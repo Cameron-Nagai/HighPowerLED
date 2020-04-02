@@ -64,20 +64,31 @@
 #define blueWord "blue"
 #define greenWord "green"
 #define whiteWord "white"
+#define amberWord "amber"
+#define cyanWord "cyan"
+#define purpleWord "purple"
+#define pinkWord "pink"
 
 fauxmoESP fauxmo;
 
 const int buttonPin = 23;
 
 int buttonPushCounter = 1;   // counter for the number of button presses
+int buttonPushCounterTemp; //TODO saves the push button state when using alexa 
 int buttonState = 0;         // current state of the button
 int lastButtonState = 0;     // previous state of the button
+
+int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
 bool isRainbow = false;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
 bool isWhite = false;
+bool isAmber = false;
+bool isCyan = false;
+bool isPurple = false;
+bool isPink = false;
 
 int redPin = 16;   // Red LED,   connected to digital pin 16
 int grnPin = 17;  // Green LED, connected to digital pin 17
@@ -158,10 +169,15 @@ void buttonLogic() {
   	  isGreen = false;
  	  isBlue = false;
   	  isWhite = false;
+  	  isAmber = false;
+	  isCyan = false;
+	  isPurple = false;
+	  isPink = false;
+
 
       // if the current state is HIGH then the button went from off to on:
       buttonPushCounter++;
-      if (buttonPushCounter > 5) {
+      if (buttonPushCounter > 10) {
       	buttonPushCounter = 1;
       }
       Serial.println("on");
@@ -212,6 +228,11 @@ void setup()
   fauxmo.addDevice(greenWord);
   fauxmo.addDevice(blueWord);
   fauxmo.addDevice(whiteWord);
+  fauxmo.addDevice(amberWord);
+  fauxmo.addDevice(cyanWord);
+  fauxmo.addDevice(purpleWord);
+  fauxmo.addDevice(pinkWord);
+
 
 
   Serial.println("devices enabled");
@@ -226,10 +247,10 @@ void setup()
         
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
       if ( (strcmp(device_name, rainbowWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
       Serial.println("Rainbow switched on by Alexa");
         if (state) {
         isRainbow = true;
+        Serial.print("rainbow is true");
       } 
     }
 	    else {
@@ -237,25 +258,21 @@ void setup()
 	      }
 
       if ( (strcmp(device_name, redWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
       Serial.println("Red switched on by Alexa");
         if (state) {
         isRed = true;
-        isRainbow = false;
-        Serial.println("isred is true");
+        Serial.println("red is true");
       } 
     }
 		else {
 	        isRed = false;
-	        Serial.println("isred is false");
 	      }
 
       if ( (strcmp(device_name, greenWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
       Serial.println("Green switched on by Alexa");
         if (state) {
         isGreen = true;
-        isRainbow = false;
+        Serial.println("green is true");
       } 
     }
 	    else {
@@ -263,11 +280,10 @@ void setup()
 	      }
 
       if ( (strcmp(device_name, blueWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
       Serial.println("Blue switched on by Alexa");
         if (state) {
         isBlue = true;
-        isRainbow = false;
+        Serial.println("blue is true");
       } 
     }
 	    else {
@@ -275,16 +291,65 @@ void setup()
 	      }
 
 	  if ( (strcmp(device_name, whiteWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
       Serial.println("White switched on by Alexa");
         if (state) {
         isWhite = true;
-        isRainbow = false;
+        Serial.println("white is true");
       } 
     }
 	    else {
 	        isWhite = false;
 	      }
+
+    if ( (strcmp(device_name, amberWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("Amber switched on by Alexa");
+        if (state) {
+        isAmber = true;
+        Serial.println("amber is true");
+      } 
+    }
+      else {
+          isAmber = false;
+        }
+
+    if ( (strcmp(device_name, cyanWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("Cyan switched on by Alexa");
+        if (state) {
+        isCyan = true;
+        Serial.println("cyan is true");
+      } 
+    }
+      else {
+          isCyan = false;
+        }
+
+    if ( (strcmp(device_name, purpleWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("Purple switched on by Alexa");
+        if (state) {
+        isPurple = true;
+        Serial.println("purple is true");
+      } 
+    }
+      else {
+          isPurple = false;
+        }
+
+    if ( (strcmp(device_name, pinkWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("pink switched on by Alexa");
+        if (state) {
+        isPink = true;
+        Serial.println("pink is true");
+      } 
+    }
+      else {
+          isPink = false;
+        }
+
+
 
    
   });
@@ -343,65 +408,156 @@ void loop()
  //  }
 
 
-//runs color/pattern if booleans are true
+ //runs color/pattern if booleans are true or button is pressed a certain amount of times
+
+  
 
   if (isRainbow == true || buttonPushCounter == 1) {
-  isRed = false;
-  isGreen = false;
-  isBlue = false;
-  isWhite = false;
+	  isRed = false;
+	  isGreen = false;
+	  isBlue = false;
+	  isWhite = false;
+	  isAmber = false;
+	  isCyan = false;
+	  isPurple = false;
+	  isPink = false;
 
-  crossFade(red);
-  crossFade(green);
-  crossFade(blue);
-  crossFade(yellow);
+
+	  crossFade(red);
+	  crossFade(green);
+	  crossFade(blue);
+	  crossFade(yellow);
 
   Serial.println("color set to rainbow");
   }
  
   else if (isRed == true || buttonPushCounter == 2) {
-  	color("red");
-  isRainbow = false;
-  isGreen = false;
-  isBlue = false;
-  isWhite = false;
-  Serial.println("color set to red");
+  	
+	  isRainbow = false;
+	  isGreen = false;
+	  isBlue = false;
+	  isWhite = false;
+	  isAmber = false;
+  	  isCyan = false;
+      isPurple = false;
+      isPink = false;
+      color("red");
+  // Serial.println("color set to red");
   }
 
   else if (isGreen == true || buttonPushCounter == 3) {
-  	color("green");
-  isRed = false;
-  isRainbow = false;
-  isBlue = false;
-  isWhite = false;
-  Serial.println("color set to green");
+  	
+	  isRed = false;
+	  isRainbow = false;
+	  isBlue = false;
+	  isWhite = false;
+	  isAmber = false;
+	  isCyan = false;
+	  isPurple = false;
+	  isPink = false;
+	  color("green");
+  // Serial.println("color set to green");
 
   }
 
   else if (isBlue == true || buttonPushCounter == 4) {
-  	color ("blue");
-  isRed = false;
-  isGreen = false;
-  isRainbow = false;
-  isWhite = false;
-  Serial.println("color set to blue");
+  	
+	  isRed = false;
+	  isGreen = false;
+	  isRainbow = false;
+	  isWhite = false;
+	  isAmber = false;
+	  isCyan = false;
+	  isPurple = false;
+	  isPink = false;
+	  color ("blue");
+  // Serial.println("color set to blue");
 
   }
 
   else if (isWhite == true || buttonPushCounter == 5) {
-  	color ("white");
-  isRed = false;
-  isGreen = false;
-  isRainbow = false;
-  isBlue = false;
-  Serial.println("color set to white");
+  	
+	  isRed = false;
+	  isGreen = false;
+	  isRainbow = false;
+	  isBlue = false;
+	  isAmber = false;
+	  isCyan = false;
+	  isPurple = false;
+	  isPink = false;
+	  color ("white");
+
   }
+
+  else if (isAmber == true || buttonPushCounter == 6) {
+  	
+	  isRed = false;
+	  isGreen = false;
+	  isBlue = false;
+	  isRainbow = false;
+	  isWhite = false;
+	  isCyan = false;
+	  isPurple = false;
+	  isPink = false;
+	  color ("amber");
+
+  }
+
+  else if (isCyan == true || buttonPushCounter == 7) {
+  	
+	  isRed = false;
+	  isGreen = false;
+	  isRainbow = false;
+	  isBlue = false;
+	  isWhite = false;
+	  isAmber = false;
+	  isPurple = false;
+	  isPink = false;
+	  color ("cyan");
+
+  }
+
+    else if (isPurple == true || buttonPushCounter == 8) {
+  	
+	  isRed = false;
+	  isGreen = false;
+	  isRainbow = false;
+	  isBlue = false;
+	  isWhite = false;
+	  isAmber = false;
+	  isCyan = false;
+	  isPink = false;
+	  color ("purple");
+  }
+
+  else if (isPink == true || buttonPushCounter == 9) {
+  	
+
+	  isRed = false;
+	  isGreen = false;
+	  isRainbow = false;
+	  isBlue = false;
+	  isWhite = false;
+	  isAmber = false;
+	  isCyan = false;
+	  isPurple = false;
+	  color ("pink");
+
+  }
+
 
 //display black if none of the booleans are true
 
   else {
   	color("black");
   	Serial.println("color is set to black");
+  	if (isRainbow){
+  		Serial.println("rainbow is true");
+  	}
+
+  	else {
+  		Serial.println("rainbow is false");
+  	}
   }
 
   if (repeat) { // Do we loop a finite number of times?
@@ -521,6 +677,38 @@ void color(String color) {
 		ledcWrite (greenPWMChannel, 0);
 		ledcWrite (bluePWMChannel, 0);
 		ledcWrite (whitePWMChannel, 255);
+
+	}
+
+	else if (color == "amber") {
+		ledcWrite (redPWMChannel, 255);
+		ledcWrite (greenPWMChannel, 128);
+		ledcWrite (bluePWMChannel, 0);
+		ledcWrite (whitePWMChannel, 70);
+
+	}
+
+	else if (color == "cyan") {
+		ledcWrite (redPWMChannel, 0);
+		ledcWrite (greenPWMChannel, 255);
+		ledcWrite (bluePWMChannel, 255);
+		ledcWrite (whitePWMChannel, 25);
+
+	}
+
+	else if (color == "purple") {
+		ledcWrite (redPWMChannel, 128);
+		ledcWrite (greenPWMChannel, 8);
+		ledcWrite (bluePWMChannel, 255);
+		ledcWrite (whitePWMChannel, 25);
+
+	}
+
+	else if (color == "pink") {
+		ledcWrite (redPWMChannel, 255);
+		ledcWrite (greenPWMChannel, 0);
+		ledcWrite (bluePWMChannel, 128);
+		ledcWrite (whitePWMChannel, 75);
 
 	}
 }
