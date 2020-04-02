@@ -59,16 +59,25 @@
 #define WIFI_PASS "Do you know the way to mayan warrior?"
 
 #define rainbowWord "rainbow"
+#define fastrainbowWord "fast rainbow"
 #define redWord "red"
 #define blueWord "blue"
 #define greenWord "green"
+#define whiteWord "white"
 
 fauxmoESP fauxmo;
+
+const int buttonPin = 23;
+
+int buttonPushCounter = 1;   // counter for the number of button presses
+int buttonState = 0;         // current state of the button
+int lastButtonState = 0;     // previous state of the button
 
 bool isRainbow = false;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
+bool isWhite = false;
 
 int redPin = 16;   // Red LED,   connected to digital pin 16
 int grnPin = 17;  // Green LED, connected to digital pin 17
@@ -98,7 +107,8 @@ int redVal = black[0];
 int grnVal = black[1]; 
 int bluVal = black[2];
 
-int wait = 10;      // 10ms internal crossFade delay; increase for slower fades
+// int wait = 10;      // 10ms internal crossFade delay; increase for slower fades
+int wait = 10;
 int hold = 0;       // Optional hold when a color is complete, before the next crossFade
 int DEBUG = 1;      // DEBUG counter; if set to 1, will write values back via serial
 int loopCount = 60; // How often should DEBUG report?
@@ -135,9 +145,45 @@ void wifiSetup() {
   	WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 }
 
+void buttonLogic() {
+  //Button Logic
+  buttonState = digitalRead(buttonPin);
+
+  if (buttonState != lastButtonState) {
+    // if the state has changed, increment the counter
+    if (buttonState == HIGH) {
+
+      isRainbow = false;
+  	  isRed = false;
+  	  isGreen = false;
+ 	  isBlue = false;
+  	  isWhite = false;
+
+      // if the current state is HIGH then the button went from off to on:
+      buttonPushCounter++;
+      if (buttonPushCounter > 5) {
+      	buttonPushCounter = 1;
+      }
+      Serial.println("on");
+      Serial.print("number of button pushes: ");
+      Serial.println(buttonPushCounter);
+
+    } else {
+      // if the current state is LOW then the button went from on to off:
+      Serial.println("off");
+    }
+    // Delay a little bit to avoid bouncing
+    delay(100);
+  }
+  // save the current state as the last state, for next time through the loop
+  lastButtonState = buttonState;
+  }
+
 
 void setup()
 {
+
+  pinMode(buttonPin, INPUT);
 
   Serial.begin(9600);  // ...set up the serial ouput
   
@@ -165,10 +211,13 @@ void setup()
   fauxmo.addDevice(redWord);
   fauxmo.addDevice(greenWord);
   fauxmo.addDevice(blueWord);
+  fauxmo.addDevice(whiteWord);
+
 
   Serial.println("devices enabled");
 
   fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
+  	buttonPushCounter = 0;
     // Callback when a command from Alexa is received. 
     // You can use device_id or device_name to choose the element to perform an action onto (relay, LED,...)
     // State is a boolean (ON/OFF) and value a number from 0 to 255 (if you say "set kitchen light to 50%" you will receive a 128 here).
@@ -192,10 +241,13 @@ void setup()
       Serial.println("Red switched on by Alexa");
         if (state) {
         isRed = true;
+        isRainbow = false;
+        Serial.println("isred is true");
       } 
     }
 		else {
 	        isRed = false;
+	        Serial.println("isred is false");
 	      }
 
       if ( (strcmp(device_name, greenWord) == 0) ) {
@@ -203,6 +255,7 @@ void setup()
       Serial.println("Green switched on by Alexa");
         if (state) {
         isGreen = true;
+        isRainbow = false;
       } 
     }
 	    else {
@@ -214,12 +267,24 @@ void setup()
       Serial.println("Blue switched on by Alexa");
         if (state) {
         isBlue = true;
+        isRainbow = false;
       } 
     }
 	    else {
 	        isBlue = false;
 	      }
 
+	  if ( (strcmp(device_name, whiteWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("White switched on by Alexa");
+        if (state) {
+        isWhite = true;
+        isRainbow = false;
+      } 
+    }
+	    else {
+	        isWhite = false;
+	      }
 
    
   });
@@ -228,12 +293,12 @@ void setup()
 
 
   // Set up the LED outputs
-  ledcSetup(redPWMChannel, freq, resolution);	//Configures PWM Channels for LEDs
+  ledcSetup(redPWMChannel, freq, resolution);	//Configures PWM Channels for LEDs (1 different pwm channel per led)
   ledcSetup(greenPWMChannel, freq, resolution);  
   ledcSetup(bluePWMChannel, freq, resolution);  
   ledcSetup(whitePWMChannel, freq, resolution);  
 
-  ledcAttachPin(redPin, redPWMChannel);
+  ledcAttachPin(redPin, redPWMChannel);			//Assigns pins to pwm channels
   ledcAttachPin(grnPin, greenPWMChannel);
   ledcAttachPin(bluPin, bluePWMChannel);
   ledcAttachPin(whitePin, whitePWMChannel);
@@ -243,59 +308,100 @@ void setup()
 
 }
 
-// Main program: list the order of crossfades
+// Main program
 void loop()
 {
-  fauxmo.handle();
 
-  if (isRainbow == true) {
-	Serial.println("Rainbow is true");
-  }
+  fauxmo.handle();   //Alexa discovery
+  
+
+  buttonLogic(); //Button Logic
+
+
+  //Booleans for checking if alexa/button has activated a certain color/pattern
+
+ //  if (isRainbow == true) {
+	// Serial.println("Rainbow is true");
+ //  }
  
-  if (isRed == true) {
-  	Serial.println("red is true");
-  }
+ //  if (isRed == true) {
+ //  	Serial.println("red is true");
+ //  }
 
 
-  else if (isGreen == true) {
-  	Serial.println("green is true");
-  }
+ //  else if (isGreen == true) {
+ //  	Serial.println("green is true");
+ //  }
 
-   else if (isBlue == true) {
-  	Serial.println("blue is true");
-  }
+ //   else if (isBlue == true) {
+ //  	Serial.println("blue is true");
+ //  }
 
-  else {
-  	Serial.println("black is black");
+ //  else {
+ //  	Serial.println("black is black");
 
-  }
+ //  }
 
 
+//runs color/pattern if booleans are true
 
-  if (isRainbow == true) {
+  if (isRainbow == true || buttonPushCounter == 1) {
+  isRed = false;
+  isGreen = false;
+  isBlue = false;
+  isWhite = false;
+
   crossFade(red);
   crossFade(green);
   crossFade(blue);
   crossFade(yellow);
 
+  Serial.println("color set to rainbow");
   }
  
-  else if (isRed == true) {
+  else if (isRed == true || buttonPushCounter == 2) {
   	color("red");
-
+  isRainbow = false;
+  isGreen = false;
+  isBlue = false;
+  isWhite = false;
+  Serial.println("color set to red");
   }
 
-  else if (isGreen == true) {
+  else if (isGreen == true || buttonPushCounter == 3) {
   	color("green");
+  isRed = false;
+  isRainbow = false;
+  isBlue = false;
+  isWhite = false;
+  Serial.println("color set to green");
+
   }
 
-  else if (isBlue == true) {
+  else if (isBlue == true || buttonPushCounter == 4) {
   	color ("blue");
+  isRed = false;
+  isGreen = false;
+  isRainbow = false;
+  isWhite = false;
+  Serial.println("color set to blue");
+
   }
+
+  else if (isWhite == true || buttonPushCounter == 5) {
+  	color ("white");
+  isRed = false;
+  isGreen = false;
+  isRainbow = false;
+  isBlue = false;
+  Serial.println("color set to white");
+  }
+
+//display black if none of the booleans are true
 
   else {
   	color("black");
-
+  	Serial.println("color is set to black");
   }
 
   if (repeat) { // Do we loop a finite number of times?
@@ -381,13 +487,14 @@ void color(String color) {
 		ledcWrite (redPWMChannel, 0);
 		ledcWrite (greenPWMChannel, 0);
 		ledcWrite (bluePWMChannel, 0);
-
+		ledcWrite (whitePWMChannel, 0);
 	}
 
 	else if (color == "red") {
 		ledcWrite (redPWMChannel, 255);
 		ledcWrite (greenPWMChannel, 0);
 		ledcWrite (bluePWMChannel, 0);
+		ledcWrite (whitePWMChannel, 0);
 
 
 	}
@@ -395,6 +502,7 @@ void color(String color) {
 		ledcWrite (redPWMChannel, 0);
 		ledcWrite (greenPWMChannel, 255);
 		ledcWrite (bluePWMChannel, 0);
+		ledcWrite (whitePWMChannel, 0);
 
 
 	}
@@ -403,7 +511,16 @@ void color(String color) {
 		ledcWrite (redPWMChannel, 0);
 		ledcWrite (greenPWMChannel, 0);
 		ledcWrite (bluePWMChannel, 255);
+		ledcWrite (whitePWMChannel, 0);
 
+
+	}
+
+	else if (color == "white") {
+		ledcWrite (redPWMChannel, 0);
+		ledcWrite (greenPWMChannel, 0);
+		ledcWrite (bluePWMChannel, 0);
+		ledcWrite (whitePWMChannel, 255);
 
 	}
 }
@@ -418,10 +535,14 @@ void crossFade(int color[3]) {
   int stepG = calculateStep(prevG, G); 
   int stepB = calculateStep(prevB, B);
   
-  for (int i = 0; i <= 1020 && isRainbow == true; i++) {
+  for (int i = 0; i <= 1020 && (isRainbow == true || buttonPushCounter == 1); i++) {
+
+  	buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
+
     redVal = calculateVal(stepR, redVal, i);
     grnVal = calculateVal(stepG, grnVal, i);
     bluVal = calculateVal(stepB, bluVal, i);
+
 
     // analogWrite(redPin, redVal);   
     // analogWrite(grnPin, grnVal);      
@@ -430,6 +551,7 @@ void crossFade(int color[3]) {
     ledcWrite(redPWMChannel, redVal);	// Write current values to LED pins
     ledcWrite(greenPWMChannel, grnVal);
     ledcWrite(bluePWMChannel, bluVal);
+    ledcWrite(whitePWMChannel, 0);
 
     delay(wait); // Pause for 'wait' milliseconds before resuming the loop
 
