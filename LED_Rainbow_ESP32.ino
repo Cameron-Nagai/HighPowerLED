@@ -80,13 +80,13 @@ int lastButtonState = 0;     // previous state of the button
 
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
-bool isRainbow = false;
+bool isRainbow = true;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
 bool isWhite = false;
 bool isAmber = false;
-bool isCyan = false;
+bool isCyan = false;seri
 bool isPurple = false;
 bool isPink = false;
 
