@@ -69,7 +69,7 @@
 #define purpleWord "purple"
 #define pinkWord "pink"
 
-fauxmoESP fauxmo;
+//fauxmoESP fauxmo;
 
 const int buttonPin = 23;
 
@@ -80,7 +80,7 @@ int lastButtonState = 0;     // previous state of the button
 
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
-bool isRainbow = false;
+bool isRainbow = true;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
@@ -206,153 +206,153 @@ void setup()
   // Wi-Fi connection
 //  wifiSetup();	
 
-  fauxmo.createServer(true); // not needed, this is the default value
-  fauxmo.setPort(80); // This is required for gen3 devices
+//  fauxmo.createServer(true); // not needed, this is the default value
+//  fauxmo.setPort(80); // This is required for gen3 devices
+//
+//  // You have to call enable(true) once you have a WiFi connection
+//  // You can enable or disable the library at any moment
+//  // Disabling it will prevent the devices from being discovered and switched
+//  fauxmo.enable(true);
 
-  // You have to call enable(true) once you have a WiFi connection
-  // You can enable or disable the library at any moment
-  // Disabling it will prevent the devices from being discovered and switched
-  fauxmo.enable(true);
 
 
-
-  Serial.println("fauxmo enabled");
+//  Serial.println("fauxmo enabled");
  
 
   // You can use different ways to invoke alexa to modify the devices state:
   // "Alexa, turn lamp two on"
 
   // Add virtual devices
-  fauxmo.addDevice(rainbowWord);
-  fauxmo.addDevice(redWord);
-  fauxmo.addDevice(greenWord);
-  fauxmo.addDevice(blueWord);
-  fauxmo.addDevice(whiteWord);
-  fauxmo.addDevice(amberWord);
-  fauxmo.addDevice(cyanWord);
-  fauxmo.addDevice(purpleWord);
-  fauxmo.addDevice(pinkWord);
+//  fauxmo.addDevice(rainbowWord);
+//  fauxmo.addDevice(redWord);
+//  fauxmo.addDevice(greenWord);
+//  fauxmo.addDevice(blueWord);
+//  fauxmo.addDevice(whiteWord);
+//  fauxmo.addDevice(amberWord);
+//  fauxmo.addDevice(cyanWord);
+//  fauxmo.addDevice(purpleWord);
+//  fauxmo.addDevice(pinkWord);
 
 
 
-  Serial.println("devices enabled");
+//  Serial.println("devices enabled");
 
-  fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
-  	buttonPushCounter = 0;
-    // Callback when a command from Alexa is received. 
-    // You can use device_id or device_name to choose the element to perform an action onto (relay, LED,...)
-    // State is a boolean (ON/OFF) and value a number from 0 to 255 (if you say "set kitchen light to 50%" you will receive a 128 here).
-    // Just remember not to delay too much here, this is a callback, exit as soon as possible.
-    // If you have to do something more involved here set a flag and process it in your main loop.
-        
-    Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
-      if ( (strcmp(device_name, rainbowWord) == 0) ) {
-      Serial.println("Rainbow switched on by Alexa");
-        if (state) {
-        isRainbow = true;
-        Serial.print("rainbow is true");
-      } 
-    }
-	    else {
-	        isRainbow = false;
-	      }
-
-      if ( (strcmp(device_name, redWord) == 0) ) {
-      Serial.println("Red switched on by Alexa");
-        if (state) {
-        isRed = true;
-        Serial.println("red is true");
-      } 
-    }
-		else {
-	        isRed = false;
-	      }
-
-      if ( (strcmp(device_name, greenWord) == 0) ) {
-      Serial.println("Green switched on by Alexa");
-        if (state) {
-        isGreen = true;
-        Serial.println("green is true");
-      } 
-    }
-	    else {
-	        isGreen = false;
-	      }
-
-      if ( (strcmp(device_name, blueWord) == 0) ) {
-      Serial.println("Blue switched on by Alexa");
-        if (state) {
-        isBlue = true;
-        Serial.println("blue is true");
-      } 
-    }
-	    else {
-	        isBlue = false;
-	      }
-
-	  if ( (strcmp(device_name, whiteWord) == 0) ) {
-      Serial.println("White switched on by Alexa");
-        if (state) {
-        isWhite = true;
-        Serial.println("white is true");
-      } 
-    }
-	    else {
-	        isWhite = false;
-	      }
-
-    if ( (strcmp(device_name, amberWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-      Serial.println("Amber switched on by Alexa");
-        if (state) {
-        isAmber = true;
-        Serial.println("amber is true");
-      } 
-    }
-      else {
-          isAmber = false;
-        }
-
-    if ( (strcmp(device_name, cyanWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-      Serial.println("Cyan switched on by Alexa");
-        if (state) {
-        isCyan = true;
-        Serial.println("cyan is true");
-      } 
-    }
-      else {
-          isCyan = false;
-        }
-
-    if ( (strcmp(device_name, purpleWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-      Serial.println("Purple switched on by Alexa");
-        if (state) {
-        isPurple = true;
-        Serial.println("purple is true");
-      } 
-    }
-      else {
-          isPurple = false;
-        }
-
-    if ( (strcmp(device_name, pinkWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-      Serial.println("pink switched on by Alexa");
-        if (state) {
-        isPink = true;
-        Serial.println("pink is true");
-      } 
-    }
-      else {
-          isPink = false;
-        }
-
-
-
-   
-  });
+//  fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
+//  	buttonPushCounter = 0;
+//    // Callback when a command from Alexa is received. 
+//    // You can use device_id or device_name to choose the element to perform an action onto (relay, LED,...)
+//    // State is a boolean (ON/OFF) and value a number from 0 to 255 (if you say "set kitchen light to 50%" you will receive a 128 here).
+//    // Just remember not to delay too much here, this is a callback, exit as soon as possible.
+//    // If you have to do something more involved here set a flag and process it in your main loop.
+//        
+//    Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
+//      if ( (strcmp(device_name, rainbowWord) == 0) ) {
+//      Serial.println("Rainbow switched on by Alexa");
+//        if (state) {
+//        isRainbow = true;
+//        Serial.print("rainbow is true");
+//      } 
+//    }
+//	    else {
+//	        isRainbow = false;
+//	      }
+//
+//      if ( (strcmp(device_name, redWord) == 0) ) {
+//      Serial.println("Red switched on by Alexa");
+//        if (state) {
+//        isRed = true;
+//        Serial.println("red is true");
+//      } 
+//    }
+//		else {
+//	        isRed = false;
+//	      }
+//
+//      if ( (strcmp(device_name, greenWord) == 0) ) {
+//      Serial.println("Green switched on by Alexa");
+//        if (state) {
+//        isGreen = true;
+//        Serial.println("green is true");
+//      } 
+//    }
+//	    else {
+//	        isGreen = false;
+//	      }
+//
+//      if ( (strcmp(device_name, blueWord) == 0) ) {
+//      Serial.println("Blue switched on by Alexa");
+//        if (state) {
+//        isBlue = true;
+//        Serial.println("blue is true");
+//      } 
+//    }
+//	    else {
+//	        isBlue = false;
+//	      }
+//
+//	  if ( (strcmp(device_name, whiteWord) == 0) ) {
+//      Serial.println("White switched on by Alexa");
+//        if (state) {
+//        isWhite = true;
+//        Serial.println("white is true");
+//      } 
+//    }
+//	    else {
+//	        isWhite = false;
+//	      }
+//
+//    if ( (strcmp(device_name, amberWord) == 0) ) {
+//      // this just sets a variable that the main loop() does something about
+//      Serial.println("Amber switched on by Alexa");
+//        if (state) {
+//        isAmber = true;
+//        Serial.println("amber is true");
+//      } 
+//    }
+//      else {
+//          isAmber = false;
+//        }
+//
+//    if ( (strcmp(device_name, cyanWord) == 0) ) {
+//      // this just sets a variable that the main loop() does something about
+//      Serial.println("Cyan switched on by Alexa");
+//        if (state) {
+//        isCyan = true;
+//        Serial.println("cyan is true");
+//      } 
+//    }
+//      else {
+//          isCyan = false;
+//        }
+//
+//    if ( (strcmp(device_name, purpleWord) == 0) ) {
+//      // this just sets a variable that the main loop() does something about
+//      Serial.println("Purple switched on by Alexa");
+//        if (state) {
+//        isPurple = true;
+//        Serial.println("purple is true");
+//      } 
+//    }
+//      else {
+//          isPurple = false;
+//        }
+//
+//    if ( (strcmp(device_name, pinkWord) == 0) ) {
+//      // this just sets a variable that the main loop() does something about
+//      Serial.println("pink switched on by Alexa");
+//        if (state) {
+//        isPink = true;
+//        Serial.println("pink is true");
+//      } 
+//    }
+//      else {
+//          isPink = false;
+//        }
+//
+//
+//
+//   
+//  });
 
 
 
@@ -377,7 +377,7 @@ void setup()
 void loop()
 {
 
-  fauxmo.handle();   //Alexa discovery
+//  fauxmo.handle();   //Alexa discovery
   
 
   buttonLogic(); //Button Logic
