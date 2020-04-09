@@ -52,7 +52,7 @@
 */ 
 
 // Output
-#include <WiFi.h>
+//#include <WiFi.h>
 #include "fauxmoESP.h"
 
 #define WIFI_SSID "Sue Associates Downstairs"
@@ -80,13 +80,13 @@ int lastButtonState = 0;     // previous state of the button
 
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
-bool isRainbow = true;
+bool isRainbow = false;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
 bool isWhite = false;
 bool isAmber = false;
-bool isCyan = false;seri
+bool isCyan = false;
 bool isPurple = false;
 bool isPink = false;
 
@@ -136,25 +136,25 @@ int prevB = bluVal;
 
 
 // Wi-Fi Connection
-void wifiSetup() {
-  // Set WIFI module to STA mode
-  WiFi.mode(WIFI_STA);
-
-  // Connect
-  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-
-  // Wait
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(100);
-  }
-  Serial.println();
-
-  // Connected!
-  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n", 
-  	WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
-}
+//void wifiSetup() {
+//  // Set WIFI module to STA mode
+//  WiFi.mode(WIFI_STA);
+//
+//  // Connect
+//  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
+//  WiFi.begin(WIFI_SSID, WIFI_PASS);
+//
+//  // Wait
+//  while (WiFi.status() != WL_CONNECTED) {
+//    Serial.print(".");
+//    delay(100);
+//  }
+//  Serial.println();
+//
+//  // Connected!
+//  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n", 
+//  	WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+//}
 
 void buttonLogic() {
   //Button Logic
@@ -204,7 +204,7 @@ void setup()
   Serial.begin(9600);  // ...set up the serial ouput
   
   // Wi-Fi connection
-  wifiSetup();	
+//  wifiSetup();	
 
   fauxmo.createServer(true); // not needed, this is the default value
   fauxmo.setPort(80); // This is required for gen3 devices
