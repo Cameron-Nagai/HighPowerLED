@@ -86,7 +86,7 @@ bool isBlue = false;
 bool isGreen = false;
 bool isWhite = false;
 bool isAmber = false;
-bool isCyan = false;seri
+bool isCyan = false;
 bool isPurple = false;
 bool isPink = false;
 
