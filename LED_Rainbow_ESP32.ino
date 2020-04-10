@@ -1,3 +1,4 @@
+
 /*
 * Code for cross-fading 3 LEDs, red, green and blue (RGB) 
 * To create fades, you need to do two things: 
@@ -53,10 +54,13 @@
 
 // Output
 #include <WiFi.h>
+#include <WiFiClient.h>
 #include "fauxmoESP.h"
+#include <ESP_WiFiManager.h>              //https://github.com/khoih-prog/ESP_WiFiManager
+#define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
-#define WIFI_SSID "Sue Associates Downstairs"
-#define WIFI_PASS "Do you know the way to mayan warrior?"
+//#define WIFI_SSID
+//#define WIFI_PASS
 
 #define rainbowWord "rainbow"
 #define fastrainbowWord "fast rainbow"
@@ -71,6 +75,12 @@
 
 fauxmoESP fauxmo;
 
+bool wifiSaved;
+String AP_SSID;
+String AP_PASS;
+String Router_SSID;
+String Router_Pass;
+
 const int buttonPin = 23;
 
 int buttonPushCounter = 1;   // counter for the number of button presses
@@ -80,7 +90,7 @@ int lastButtonState = 0;     // previous state of the button
 
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
-bool isRainbow = true;
+bool isRainbow = false;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
@@ -90,9 +100,13 @@ bool isCyan = false;
 bool isPurple = false;
 bool isPink = false;
 
-int redPin = 16;   // Red LED,   connected to digital pin 16
+//red is blue
+//green is green
+
+
+int redPin = 18;   // Red LED,   connected to digital pin 16
 int grnPin = 17;  // Green LED, connected to digital pin 17
-int bluPin = 18;  // Blue LED,  connected to digital pin 18
+int bluPin = 16;  // Blue LED,  connected to digital pin 18
 int whitePin = 19; // White LED,  connected to digital pin 19
 
 
@@ -135,30 +149,24 @@ int prevB = bluVal;
 
 
 
-// Wi-Fi Connection
-void wifiSetup() {
-  // Set WIFI module to STA mode
-  WiFi.mode(WIFI_STA);
-
-  // Connect
-  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-
-  // Wait
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(100);
-  }
-  Serial.println();
-
-  // Connected!
-  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n", 
-  	WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
-}
 
 void buttonLogic() {
   //Button Logic
   buttonState = digitalRead(buttonPin);
+
+// TODO implemnt button push wifi reset after 10 seconds
+//  WiFiManager wifiManager;
+//  //se o botão foi pressionado
+//   if ( digitalRead(buttonPin) == HIGH ) {
+//      Serial.println("resetar"); //tenta abrir o portal
+//      if(!wifiManager.startConfigPortal("ESP_AP", "12345678") ){
+//        Serial.println("Falha ao conectar");
+//        delay(2000);
+//        ESP.restart();
+//        delay(1000);
+//      }
+//      Serial.println("Conectou ESP_AP!!!");
+//   }
 
   if (buttonState != lastButtonState) {
     // if the state has changed, increment the counter
@@ -167,12 +175,12 @@ void buttonLogic() {
       isRainbow = false;
   	  isRed = false;
   	  isGreen = false;
- 	  isBlue = false;
+ 	    isBlue = false;
   	  isWhite = false;
   	  isAmber = false;
-	  isCyan = false;
-	  isPurple = false;
-	  isPink = false;
+	    isCyan = false;
+	    isPurple = false;
+	    isPink = false;
 
 
       // if the current state is HIGH then the button went from off to on:
@@ -195,33 +203,19 @@ void buttonLogic() {
   lastButtonState = buttonState;
   }
 
-
-void setup()
-{
-
-  pinMode(buttonPin, INPUT);
-
-  Serial.begin(9600);  // ...set up the serial ouput
-  
-  // Wi-Fi connection
-  wifiSetup();	
-
+void alexaSetup() {
   fauxmo.createServer(true); // not needed, this is the default value
-  fauxmo.setPort(80); // This is required for gen3 devices
+  fauxmo.setPort(80); // This is required for gen3 alexa devices
 
   // You have to call enable(true) once you have a WiFi connection
   // You can enable or disable the library at any moment
   // Disabling it will prevent the devices from being discovered and switched
   fauxmo.enable(true);
-
-
-
   Serial.println("fauxmo enabled");
- 
-
   // You can use different ways to invoke alexa to modify the devices state:
-  // "Alexa, turn lamp two on"
-
+  // "Alexa, turn "color" on"
+  // "Alexa, turn " color off"
+  
   // Add virtual devices
   fauxmo.addDevice(rainbowWord);
   fauxmo.addDevice(redWord);
@@ -236,7 +230,133 @@ void setup()
 
 
   Serial.println("devices enabled");
+}
 
+void configModeCallback (ESP_WiFiManager *myESP_WiFiManager) {
+
+  Serial.print("Entered config mode with ");
+  Serial.println("AP_SSID : " + myESP_WiFiManager->getConfigPortalSSID() + " and AP_PASS = " + myESP_WiFiManager->getConfigPortalPW());
+
+  Serial.println(WiFi.softAPIP());
+}
+
+void saveConfigCallback (void) {
+//  Serial.println("Should save config");
+  wifiSaved = true;
+  Serial.println("wifi = true");
+  Serial.println ("Configuration saved");
+  Serial.println ("local ip" + WiFi.localIP());
+  Serial.println ("ap ip " + WiFi.softAPIP ()); // print the IP of the AP
+
+}
+
+
+// Wi-Fi Connection
+void wifiSetup() {
+    Serial.println("\nStarting AutoConnectWithFeedBack");
+
+  // Use this to default DHCP hostname to ESP8266-XXXXXX or ESP32-XXXXXX
+  //ESP_WiFiManager ESP_wifiManager;
+  // Use this to personalize DHCP hostname (RFC952 conformed)
+  ESP_WiFiManager ESP_wifiManager("CameronHighPowerLED");
+
+  //reset settings - for testing
+  //ESP_wifiManager.resetSettings();
+
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  ESP_wifiManager.setAPCallback(configModeCallback);
+  ESP_wifiManager.setSaveConfigCallback(saveConfigCallback);
+
+  ESP_wifiManager.setDebugOutput(true);
+
+  //set custom ip for portal
+  ESP_wifiManager.setAPStaticIPConfig(IPAddress(42, 42, 42, 42), IPAddress(42, 42, 42, 42), IPAddress(255, 255, 255, 0));
+
+  ESP_wifiManager.setMinimumSignalQuality(-1);
+  // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5+
+//  ESP_wifiManager.setSTAStaticIPConfig(IPAddress(192, 168, 86, 114), IPAddress(192, 168, 86, 1), IPAddress(255, 255, 255, 0));
+
+  // We can't use WiFi.SSID() in ESP32 as it's only valid after connected.
+  // SSID and Password stored in ESP32 wifi_ap_record_t and wifi_config_t are also cleared in reboot
+  // Have to create a new function to store in EEPROM/SPIFFS for this purpose
+  Router_SSID = ESP_wifiManager.WiFi_SSID();
+  Router_Pass = ESP_wifiManager.WiFi_Pass();
+
+  //Remove this line if you do not want to see WiFi password printed
+  Serial.println("Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
+
+  if (Router_SSID != "")
+  {
+    ESP_wifiManager.setConfigPortalTimeout(60); //If no access point name has been previously entered disable timeout.
+    Serial.println("Got stored Credentials. Timeout 60s");
+  }
+  else
+  {
+    Serial.println("No stored Credentials. No timeout");
+  }
+
+  String chipID = String(ESP_getChipId(), HEX);
+  chipID.toUpperCase();
+
+  // SSID and PW for Config Portal
+  AP_SSID = "HIghPowerLED-" + chipID;
+  AP_PASS = "";
+
+  // Get Router SSID and PASS from EEPROM, then open Config portal AP named "ESP_XXXXXX_AutoConnectAP" and PW "MyESP_XXXXXX"
+  // 1) If got stored Credentials, Config portal timeout is 60s
+  // 2) If no stored Credentials, stay in Config portal until get WiFi Credentials
+  if (!ESP_wifiManager.autoConnect(AP_SSID.c_str(), AP_PASS.c_str()))
+  {
+    Serial.println("failed to connect and hit timeout");
+
+    //reset and try again, or maybe put it to deep sleep
+#ifdef ESP8266
+    ESP.reset();
+#else   //ESP32
+    ESP.restart();
+#endif
+    delay(1000);
+  }
+
+  //if you get here you have connected to the WiFi
+  Serial.println("WiFi connected");
+  Serial.println ("local ip" + WiFi.localIP());
+  Serial.println ("ap ip " + WiFi.softAPIP ()); // print the IP of the AP
+  
+} 
+//  // Set WIFI module to STA mode
+//  WiFi.mode(WIFI_STA);
+//
+//  // Connect
+//  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
+//  WiFi.begin(WIFI_SSID, WIFI_PASS);
+//
+//  // Wait
+//  while (WiFi.status() != WL_CONNECTED) {
+//    Serial.print(".");
+//    delay(100);
+//  }
+//  Serial.println();
+//
+//  // Connected!
+//  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n", 
+//    WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+
+
+
+void setup()
+{
+
+  pinMode(buttonPin, INPUT);
+
+  Serial.begin(9600);  // ...set up the serial ouput
+  
+  // Wi-Fi connection
+  wifiSetup();
+  delay(10000);
+  // Alexa setup
+  alexaSetup();
+  
   fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
   	buttonPushCounter = 0;
     // Callback when a command from Alexa is received. 
@@ -385,33 +505,32 @@ void loop()
 
   //Booleans for checking if alexa/button has activated a certain color/pattern
 
- //  if (isRainbow == true) {
-	// Serial.println("Rainbow is true");
- //  }
+//   if (isRainbow == true) {
+//	 Serial.println("Rainbow is true");
+//   }
+// 
+//   if (isRed == true) {
+//   	Serial.println("red is true");
+//   }
+//
+//
+//   else if (isGreen == true) {
+//   	Serial.println("green is true");
+//   }
+//
+//    else if (isBlue == true) {
+//   	Serial.println("blue is true");
+//   }
+//
+//   else {
+//   	Serial.println("black is black");
+//
+//   }
+
+
  
- //  if (isRed == true) {
- //  	Serial.println("red is true");
- //  }
-
-
- //  else if (isGreen == true) {
- //  	Serial.println("green is true");
- //  }
-
- //   else if (isBlue == true) {
- //  	Serial.println("blue is true");
- //  }
-
- //  else {
- //  	Serial.println("black is black");
-
- //  }
-
-
- //runs color/pattern if booleans are true or button is pressed a certain amount of times
-
   
-
+//runs color/pattern if booleans are true or button is pressed a certain amount of times
   if (isRainbow == true || buttonPushCounter == 1) {
 	  isRed = false;
 	  isGreen = false;
