@@ -73,7 +73,7 @@ fauxmoESP fauxmo;
 
 const int buttonPin = 23;
 
-int buttonPushCounter = 1;   // counter for the number of button presses
+int buttonPushCounter;   // counter for the number of button presses
 int buttonPushCounterTemp; //TODO saves the push button state when using alexa 
 int buttonState = 0;         // current state of the button
 int lastButtonState = 0;     // previous state of the button
@@ -714,6 +714,10 @@ void color(String color) {
 }
 
 void crossFade(int color[3]) {
+
+  buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
+  fauxmo.handle(); //alexa discovery has to be in the rainbow thread in order to discover in the middle of rainbow pattern
+    
   // Convert to 0-255
   int R = (color[0] * 255) / 100;
   int G = (color[1] * 255) / 100;
@@ -726,7 +730,8 @@ void crossFade(int color[3]) {
   for (int i = 0; i <= 1020 && (isRainbow == true || buttonPushCounter == 1); i++) {
 
   	buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
-
+    fauxmo.handle(); //same with alexa discovery
+    
     redVal = calculateVal(stepR, redVal, i);
     grnVal = calculateVal(stepG, grnVal, i);
     bluVal = calculateVal(stepB, bluVal, i);
