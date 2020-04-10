@@ -359,7 +359,7 @@ void setup()
   alexaSetup();
   
   fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
-  	buttonPushCounter = 0;
+    buttonPushCounter = 0;
     // Callback when a command from Alexa is received. 
     // You can use device_id or device_name to choose the element to perform an action onto (relay, LED,...)
     // State is a boolean (ON/OFF) and value a number from 0 to 255 (if you say "set kitchen light to 50%" you will receive a 128 here).
@@ -369,63 +369,75 @@ void setup()
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
       if ( (strcmp(device_name, rainbowWord) == 0) ) {
       Serial.println("Rainbow switched on by Alexa");
+        Serial.println(state);
         if (state) {
         isRainbow = true;
         Serial.print("rainbow is true");
-      } 
+      }
+        else {
+            isRainbow = false; 
+          }
     }
-	    else {
-	        isRainbow = false;
-//          Serial.print("rainbow is false");
-	      }
+      else {
+          isRainbow = false;
+        }
 
       if ( (strcmp(device_name, redWord) == 0) ) {
       Serial.println("Red switched on by Alexa");
         if (state) {
+        Serial.println(state);
         isRed = true;
         Serial.println("red is true");
-      } 
+      }
+        else {
+            isRed = false; 
+          } 
     }
-		else {
-	        isRed = false;
-          Serial.print("isRed is false");
-	      }
+    else {
+          isRed = false;
+        }
 
       if ( (strcmp(device_name, greenWord) == 0) ) {
       Serial.println("Green switched on by Alexa");
         if (state) {
         isGreen = true;
         Serial.println("green is true");
-      } 
+      }
+        else {
+            isGreen = false; 
+          } 
     }
-	    else {
-	        isGreen = false;
-//          Serial.print("isGreen is false");
-	      }
+      else {
+          isGreen = false;
+        }
 
       if ( (strcmp(device_name, blueWord) == 0) ) {
       Serial.println("Blue switched on by Alexa");
         if (state) {
         isBlue = true;
         Serial.println("blue is true");
-      } 
+      }
+        else {
+            isBlue = false; 
+          }  
     }
-	    else {
-	        isBlue = false;
-//          Serial.print("isblue is false");
-	      }
+      else {
+          isBlue = false;
+        }
 
-	  if ( (strcmp(device_name, whiteWord) == 0) ) {
+    if ( (strcmp(device_name, whiteWord) == 0) ) {
       Serial.println("White switched on by Alexa");
         if (state) {
         isWhite = true;
         Serial.println("white is true");
-      } 
+      }
+        else {
+            isWhite = false; 
+          }  
     }
-	    else {
-	        isWhite = false;
-//          Serial.print("iswhite is false");
-	      }
+      else {
+          isWhite = false;
+        }
 
     if ( (strcmp(device_name, amberWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
@@ -433,11 +445,13 @@ void setup()
         if (state) {
         isAmber = true;
         Serial.println("amber is true");
-      } 
+      }
+        else {
+          isAmber = false;
+        } 
     }
       else {
           isAmber = false;
-//          Serial.print("amber is false");
         }
 
     if ( (strcmp(device_name, cyanWord) == 0) ) {
@@ -446,11 +460,13 @@ void setup()
         if (state) {
         isCyan = true;
         Serial.println("cyan is true");
-      } 
+      }
+        else {
+          isCyan = false;
+        } 
     }
       else {
           isCyan = false;
-//          Serial.print("amber is false");
         }
 
     if ( (strcmp(device_name, purpleWord) == 0) ) {
@@ -459,11 +475,13 @@ void setup()
         if (state) {
         isPurple = true;
         Serial.println("purple is true");
-      } 
+      }
+        else {
+          isPurple = false;
+        } 
     }
       else {
           isPurple = false;
-//          Serial.println("purple is false");
         }
 
     if ( (strcmp(device_name, pinkWord) == 0) ) {
@@ -472,11 +490,13 @@ void setup()
         if (state) {
         isPink = true;
         Serial.println("pink is true");
-      } 
+      }
+        else {
+          isPink = false;
+        }
     }
       else {
           isPink = false;
-//          Serial.println("pink is false");
         }
 
 
@@ -515,27 +535,27 @@ void loop()
 
   //Booleans for checking if alexa/button has activated a certain color/pattern
 
-   if (isRainbow == true) {
-	 Serial.println("Rainbow is true");
-   }
+  //  if (isRainbow == true) {
+	 // Serial.println("Rainbow is true");
+  //  }
  
-   if (isRed == true) {
-   	Serial.println("red is true");
-   }
+  //  if (isRed == true) {
+  //  	Serial.println("red is true");
+  //  }
 
 
-   else if (isGreen == true) {
-   	Serial.println("green is true");
-   }
+  //  else if (isGreen == true) {
+  //  	Serial.println("green is true");
+  //  }
 
-    else if (isBlue == true) {
-   	Serial.println("blue is true");
-   }
+  //   else if (isBlue == true) {
+  //  	Serial.println("blue is true");
+  //  }
 
-   else {
-   	Serial.println("black is black");
+  //  else {
+  //  	Serial.println("black is black");
 
-   }
+  //  }
 
 
  
