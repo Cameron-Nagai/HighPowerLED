@@ -59,8 +59,9 @@
 #include <ESP_WiFiManager.h>              //https://github.com/khoih-prog/ESP_WiFiManager
 #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
-//#define WIFI_SSID
-//#define WIFI_PASS
+
+#define WIFI_SSID "Sue Associates Downstairs"
+#define WIFI_PASS "Do you know the way to mayan warrior?"
 
 #define rainbowWord "rainbow"
 #define fastrainbowWord "fast rainbow"
@@ -83,14 +84,14 @@ String Router_Pass;
 
 const int buttonPin = 23;
 
-int buttonPushCounter = 1;   // counter for the number of button presses
+int buttonPushCounter = 0;   // counter for the number of button presses
 int buttonPushCounterTemp; //TODO saves the push button state when using alexa 
 int buttonState = 0;         // current state of the button
 int lastButtonState = 0;     // previous state of the button
 
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
-bool isRainbow = false;
+bool isRainbow = true;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
@@ -186,7 +187,7 @@ void buttonLogic() {
       // if the current state is HIGH then the button went from off to on:
       buttonPushCounter++;
       if (buttonPushCounter > 10) {
-      	buttonPushCounter = 1;
+      	buttonPushCounter = 0;
       }
       Serial.println("on");
       Serial.print("number of button pushes: ");
@@ -353,7 +354,7 @@ void setup()
   
   // Wi-Fi connection
   wifiSetup();
-  delay(10000);
+  delay(1000);
   // Alexa setup
   alexaSetup();
   
@@ -375,6 +376,7 @@ void setup()
     }
 	    else {
 	        isRainbow = false;
+//          Serial.print("rainbow is false");
 	      }
 
       if ( (strcmp(device_name, redWord) == 0) ) {
@@ -386,6 +388,7 @@ void setup()
     }
 		else {
 	        isRed = false;
+          Serial.print("isRed is false");
 	      }
 
       if ( (strcmp(device_name, greenWord) == 0) ) {
@@ -397,6 +400,7 @@ void setup()
     }
 	    else {
 	        isGreen = false;
+//          Serial.print("isGreen is false");
 	      }
 
       if ( (strcmp(device_name, blueWord) == 0) ) {
@@ -408,6 +412,7 @@ void setup()
     }
 	    else {
 	        isBlue = false;
+//          Serial.print("isblue is false");
 	      }
 
 	  if ( (strcmp(device_name, whiteWord) == 0) ) {
@@ -419,6 +424,7 @@ void setup()
     }
 	    else {
 	        isWhite = false;
+//          Serial.print("iswhite is false");
 	      }
 
     if ( (strcmp(device_name, amberWord) == 0) ) {
@@ -431,6 +437,7 @@ void setup()
     }
       else {
           isAmber = false;
+//          Serial.print("amber is false");
         }
 
     if ( (strcmp(device_name, cyanWord) == 0) ) {
@@ -443,6 +450,7 @@ void setup()
     }
       else {
           isCyan = false;
+//          Serial.print("amber is false");
         }
 
     if ( (strcmp(device_name, purpleWord) == 0) ) {
@@ -455,6 +463,7 @@ void setup()
     }
       else {
           isPurple = false;
+//          Serial.println("purple is false");
         }
 
     if ( (strcmp(device_name, pinkWord) == 0) ) {
@@ -467,6 +476,7 @@ void setup()
     }
       else {
           isPink = false;
+//          Serial.println("pink is false");
         }
 
 
@@ -505,27 +515,27 @@ void loop()
 
   //Booleans for checking if alexa/button has activated a certain color/pattern
 
-//   if (isRainbow == true) {
-//	 Serial.println("Rainbow is true");
-//   }
-// 
-//   if (isRed == true) {
-//   	Serial.println("red is true");
-//   }
-//
-//
-//   else if (isGreen == true) {
-//   	Serial.println("green is true");
-//   }
-//
-//    else if (isBlue == true) {
-//   	Serial.println("blue is true");
-//   }
-//
-//   else {
-//   	Serial.println("black is black");
-//
-//   }
+   if (isRainbow == true) {
+	 Serial.println("Rainbow is true");
+   }
+ 
+   if (isRed == true) {
+   	Serial.println("red is true");
+   }
+
+
+   else if (isGreen == true) {
+   	Serial.println("green is true");
+   }
+
+    else if (isBlue == true) {
+   	Serial.println("blue is true");
+   }
+
+   else {
+   	Serial.println("black is black");
+
+   }
 
 
  
@@ -557,10 +567,10 @@ void loop()
 	  isBlue = false;
 	  isWhite = false;
 	  isAmber = false;
-  	  isCyan = false;
-      isPurple = false;
-      isPink = false;
-      color("red");
+  	isCyan = false;
+    isPurple = false;
+    isPink = false;
+    color("red");
   // Serial.println("color set to red");
   }
 
@@ -833,6 +843,8 @@ void color(String color) {
 }
 
 void crossFade(int color[3]) {
+
+    
   // Convert to 0-255
   int R = (color[0] * 255) / 100;
   int G = (color[1] * 255) / 100;
@@ -843,9 +855,10 @@ void crossFade(int color[3]) {
   int stepB = calculateStep(prevB, B);
   
   for (int i = 0; i <= 1020 && (isRainbow == true || buttonPushCounter == 1); i++) {
-
-  	buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
-
+    
+    buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
+    fauxmo.handle(); //Alexa discovery also has to be in the rainbow thread in order for discovery to work in the middle of rainbow pattern
+    
     redVal = calculateVal(stepR, redVal, i);
     grnVal = calculateVal(stepG, grnVal, i);
     bluVal = calculateVal(stepB, bluVal, i);
