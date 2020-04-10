@@ -90,9 +90,9 @@ bool isCyan = false;
 bool isPurple = false;
 bool isPink = false;
 
-int redPin = 16;   // Red LED,   connected to digital pin 16
+int redPin = 18;   // Red LED,   connected to digital pin 16
 int grnPin = 17;  // Green LED, connected to digital pin 17
-int bluPin = 18;  // Blue LED,  connected to digital pin 18
+int bluPin = 16;  // Blue LED,  connected to digital pin 18
 int whitePin = 19; // White LED,  connected to digital pin 19
 
 
@@ -248,10 +248,14 @@ void setup()
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
       if ( (strcmp(device_name, rainbowWord) == 0) ) {
       Serial.println("Rainbow switched on by Alexa");
+        Serial.println(state);
         if (state) {
         isRainbow = true;
         Serial.print("rainbow is true");
-      } 
+      }
+        else {
+            isRainbow = false; 
+          }
     }
 	    else {
 	        isRainbow = false;
@@ -260,9 +264,13 @@ void setup()
       if ( (strcmp(device_name, redWord) == 0) ) {
       Serial.println("Red switched on by Alexa");
         if (state) {
+        Serial.println(state);
         isRed = true;
         Serial.println("red is true");
-      } 
+      }
+        else {
+            isRed = false; 
+          } 
     }
 		else {
 	        isRed = false;
@@ -273,7 +281,10 @@ void setup()
         if (state) {
         isGreen = true;
         Serial.println("green is true");
-      } 
+      }
+        else {
+            isGreen = false; 
+          } 
     }
 	    else {
 	        isGreen = false;
@@ -284,7 +295,10 @@ void setup()
         if (state) {
         isBlue = true;
         Serial.println("blue is true");
-      } 
+      }
+        else {
+            isBlue = false; 
+          }  
     }
 	    else {
 	        isBlue = false;
@@ -295,7 +309,10 @@ void setup()
         if (state) {
         isWhite = true;
         Serial.println("white is true");
-      } 
+      }
+        else {
+            isWhite = false; 
+          }  
     }
 	    else {
 	        isWhite = false;
@@ -307,7 +324,10 @@ void setup()
         if (state) {
         isAmber = true;
         Serial.println("amber is true");
-      } 
+      }
+        else {
+          isAmber = false;
+        } 
     }
       else {
           isAmber = false;
@@ -319,7 +339,10 @@ void setup()
         if (state) {
         isCyan = true;
         Serial.println("cyan is true");
-      } 
+      }
+        else {
+          isCyan = false;
+        } 
     }
       else {
           isCyan = false;
@@ -331,7 +354,10 @@ void setup()
         if (state) {
         isPurple = true;
         Serial.println("purple is true");
-      } 
+      }
+        else {
+          isPurple = false;
+        } 
     }
       else {
           isPurple = false;
@@ -343,7 +369,10 @@ void setup()
         if (state) {
         isPink = true;
         Serial.println("pink is true");
-      } 
+      }
+        else {
+          isPink = false;
+        }
     }
       else {
           isPink = false;
@@ -385,27 +414,27 @@ void loop()
 
   //Booleans for checking if alexa/button has activated a certain color/pattern
 
- //  if (isRainbow == true) {
-	// Serial.println("Rainbow is true");
- //  }
- 
- //  if (isRed == true) {
- //  	Serial.println("red is true");
- //  }
-
-
- //  else if (isGreen == true) {
- //  	Serial.println("green is true");
- //  }
-
- //   else if (isBlue == true) {
- //  	Serial.println("blue is true");
- //  }
-
- //  else {
- //  	Serial.println("black is black");
-
- //  }
+//   if (isRainbow == true) {
+//	 Serial.println("Rainbow is true");
+//   }
+// 
+//   if (isRed == true) {
+//   	Serial.println("red is true");
+//   }
+//
+//
+//   else if (isGreen == true) {
+//   	Serial.println("green is true");
+//   }
+//
+//    else if (isBlue == true) {
+//   	Serial.println("blue is true");
+//   }
+//
+//   else {
+//   	Serial.println("black is black");
+//
+//   }
 
 
  //runs color/pattern if booleans are true or button is pressed a certain amount of times
@@ -438,10 +467,10 @@ void loop()
 	  isBlue = false;
 	  isWhite = false;
 	  isAmber = false;
-  	  isCyan = false;
-      isPurple = false;
-      isPink = false;
-      color("red");
+  	isCyan = false;
+    isPurple = false;
+    isPink = false;
+    color("red");
   // Serial.println("color set to red");
   }
 
@@ -550,14 +579,6 @@ void loop()
 
   else {
   	color("black");
-  	Serial.println("color is set to black");
-  	if (isRainbow){
-  		Serial.println("rainbow is true");
-  	}
-
-  	else {
-  		Serial.println("rainbow is false");
-  	}
   }
 
   if (repeat) { // Do we loop a finite number of times?
