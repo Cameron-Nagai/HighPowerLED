@@ -59,10 +59,6 @@
 #include <ESP_WiFiManager.h>              //https://github.com/khoih-prog/ESP_WiFiManager
 #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
-
-#define WIFI_SSID "Sue Associates Downstairs"
-#define WIFI_PASS "Do you know the way to mayan warrior?"
-
 #define rainbowWord "rainbow"
 #define fastrainbowWord "fast rainbow"
 #define redWord "red"
@@ -244,7 +240,6 @@ void configModeCallback (ESP_WiFiManager *myESP_WiFiManager) {
 void saveConfigCallback (void) {
 //  Serial.println("Should save config");
   wifiSaved = true;
-  Serial.println("wifi = true");
   Serial.println ("Configuration saved");
   Serial.println ("local ip" + WiFi.localIP());
   Serial.println ("ap ip " + WiFi.softAPIP ()); // print the IP of the AP
@@ -288,8 +283,8 @@ void wifiSetup() {
 
   if (Router_SSID != "")
   {
-    ESP_wifiManager.setConfigPortalTimeout(60); //If no access point name has been previously entered disable timeout.
-    Serial.println("Got stored Credentials. Timeout 60s");
+    ESP_wifiManager.setConfigPortalTimeout(20); //If no access point name has been previously entered disable timeout.
+    Serial.println("Got stored Credentials. Timeout 20s");
   }
   else
   {
@@ -306,23 +301,12 @@ void wifiSetup() {
   // Get Router SSID and PASS from EEPROM, then open Config portal AP named "ESP_XXXXXX_AutoConnectAP" and PW "MyESP_XXXXXX"
   // 1) If got stored Credentials, Config portal timeout is 60s
   // 2) If no stored Credentials, stay in Config portal until get WiFi Credentials
-  if (!ESP_wifiManager.autoConnect(AP_SSID.c_str(), AP_PASS.c_str()))
-  {
-    Serial.println("failed to connect and hit timeout");
-
-    //reset and try again, or maybe put it to deep sleep
-#ifdef ESP8266
-    ESP.reset();
-#else   //ESP32
-    ESP.restart();
-#endif
-    delay(1000);
-  }
+  ESP_wifiManager.autoConnect(AP_SSID.c_str(), AP_PASS.c_str());
+  //or use this for Config portal AP named "ESP_XXXXXX" and NULL password
+  //ESP_wifiManager.autoConnect();
 
   //if you get here you have connected to the WiFi
   Serial.println("WiFi connected");
-  Serial.println ("local ip" + WiFi.localIP());
-  Serial.println ("ap ip " + WiFi.softAPIP ()); // print the IP of the AP
   
 } 
 //  // Set WIFI module to STA mode
