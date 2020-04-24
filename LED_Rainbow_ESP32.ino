@@ -59,16 +59,16 @@
 #include <ESP_WiFiManager.h>              //https://github.com/khoih-prog/ESP_WiFiManager
 #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
-#define rainbowWord "rainbow"
+#define rainbowWord "rainbow pyramid"
 #define fastrainbowWord "fast rainbow"
-#define redWord "red"
-#define blueWord "blue"
-#define greenWord "green"
-#define whiteWord "white"
-#define amberWord "amber"
-#define cyanWord "cyan"
-#define purpleWord "purple"
-#define pinkWord "pink"
+#define redWord "red pyramid"
+#define blueWord "blue pyramid"
+#define greenWord "green pyramid"
+#define whiteWord "white pyramid"
+#define amberWord "warm white pyramid"
+#define cyanWord "cyan pyramid"
+#define purpleWord "purple pyramid"
+#define pinkWord "pink pyramid"
 
 fauxmoESP fauxmo;
 
@@ -844,6 +844,7 @@ void color(String color) {
 		ledcWrite (whitePWMChannel, 75);
 
 	}
+  
 }
 
 void crossFade(int color[3]) {
