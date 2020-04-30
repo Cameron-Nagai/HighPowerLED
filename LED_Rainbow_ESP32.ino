@@ -59,19 +59,20 @@
 #include <ESP_WiFiManager.h>              //https://github.com/khoih-prog/ESP_WiFiManager
 #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
-#define rainbowWord "rainbow pyramid"
+#define rainbowWord "rainbow"
 #define fastrainbowWord "fast rainbow"
-#define redWord "red pyramid"
-#define blueWord "blue pyramid"
-#define greenWord "green pyramid"
-#define whiteWord "white pyramid"
-#define warmWhiteWord "warm white pyramid"
-#define cyanWord "cyan pyramid"
-#define purpleWord "purple pyramid"
-#define pinkWord "pink pyramid"
-#define orangeWord "orange pyramid"
-#define yellowWord "yellow pyramid"
-#define pastelRainbowWord "pastel rainbow pyramid"
+#define redWord "red"
+#define blueWord "blue"
+#define greenWord "green"
+#define whiteWord "white"
+#define warmWhiteWord "warm white"
+#define cyanWord "cyan"
+#define purpleWord "purple"
+#define pinkWord "pink"
+#define orangeWord "orange"
+#define yellowWord "yellow"
+#define pastelRainbowWord "pastel rainbow"
+#define loomWord "loom"
 
 fauxmoESP fauxmo;
 
@@ -90,8 +91,8 @@ int lastButtonState = 0;     // previous state of the button
 
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
 
-bool isRainbow = true;
-bool isPastelRainbow = false;
+bool isRainbow = false;
+bool isPastelRainbow = true;
 bool isRed = false;
 bool isBlue = false;
 bool isGreen = false;
@@ -102,6 +103,7 @@ bool isPurple = false;
 bool isPink = false;
 bool isYellow = false;
 bool isOrange = false;
+bool isBlack = false;
 
 //red is blue
 //green is green
@@ -174,7 +176,7 @@ void buttonLogic() {
   if (buttonState != lastButtonState) {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
-
+      isBlack = false;
       isRainbow = false;
       isPastelRainbow = false;
   	  isRed = false;
@@ -235,6 +237,7 @@ void alexaSetup() {
   fauxmo.addDevice(pinkWord);
   fauxmo.addDevice(orangeWord);
   fauxmo.addDevice(yellowWord);
+  fauxmo.addDevice(loomWord);
 
 
 
@@ -541,6 +544,28 @@ void setup()
           isPastelRainbow = false;
         }
 
+    if ( (strcmp(device_name, loomWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("loom switched on by Alexa");
+        if (state) {
+          isRainbow = true;
+      }
+        else if (!state) {
+          isPastelRainbow = false;
+          isRed = false;
+          isGreen = false;
+          isRainbow = false;
+          isBlue = false;
+          isWhite = false;
+          isWarmWhite = false;
+          isCyan = false;
+          isPurple = false;
+          isOrange = false;
+          isYellow = false;
+        }
+    }
+
+
 
 
    
@@ -615,12 +640,14 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
+    Serial.println("color is rainbow");
 	  crossFade(red);
 	  crossFade(green);
 	  crossFade(blue);
 	  crossFade(yellow);
+    Serial.println("color is rainbow");
 
-  Serial.println("color set to rainbow");
   }
 
   if (isPastelRainbow == true || buttonPushCounter == 2) {
@@ -635,12 +662,13 @@ void loop()
     isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
     pastelCrossFade(red);
     pastelCrossFade(green);
     pastelCrossFade(blue);
     pastelCrossFade(yellow);
 
-  Serial.println("color set to pastel rainbow");
+
   }
  
   else if (isRed == true || buttonPushCounter == 3) {
@@ -655,8 +683,9 @@ void loop()
     isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
     color("red");
-  // Serial.println("color set to red");
+
   }
 
   else if (isGreen == true || buttonPushCounter == 4) {
@@ -671,8 +700,9 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color("green");
-  // Serial.println("color set to green");
+
 
   }
 
@@ -688,8 +718,9 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color ("blue");
-  // Serial.println("color set to blue");
+
 
   }
 
@@ -705,6 +736,7 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color ("white");
 
   }
@@ -721,6 +753,7 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color ("warmwhite");
 
   }
@@ -737,6 +770,7 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color ("cyan");
 
   }
@@ -753,6 +787,7 @@ void loop()
 	  isPink = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color ("purple");
   }
 
@@ -768,6 +803,7 @@ void loop()
 	  isPurple = false;
     isOrange = false;
     isYellow = false;
+    isBlack = false;
 	  color ("pink");
 
   }
@@ -783,6 +819,7 @@ void loop()
     isCyan = false;
     isPurple = false;
     isYellow = false;
+    isBlack = false;
     color ("orange");
 
   }
@@ -798,24 +835,33 @@ void loop()
     isCyan = false;
     isPurple = false;
     isOrange = false;
+    isBlack = false;
     color ("yellow");
+
+  }
+
+  else if (isBlack == true || buttonPushCounter == 0) {
+    isPastelRainbow = false;
+    isRed = false;
+    isGreen = false;
+    isRainbow = false;
+    isBlue = false;
+    isWhite = false;
+    isWarmWhite = false;
+    isCyan = false;
+    isPurple = false;
+    isOrange = false;
+    isYellow = false;
+    color ("black");
+
+    Serial.println("color is black");
 
   }
 
 
 //display black if none of the booleans are true
 
-  else {
-  	color("black");
-  	Serial.println("color is set to black");
-  	if (isRainbow){
-  		Serial.println("rainbow is true");
-  	}
-
-  	else {
-  		Serial.println("rainbow is false");
-  	}
-  }
+ 
 
   if (repeat) { // Do we loop a finite number of times?
     j += 1;
@@ -1072,7 +1118,7 @@ void pastelCrossFade(int color[3]) {
     ledcWrite(redPWMChannel, redVal); // Write current values to LED pins
     ledcWrite(greenPWMChannel, grnVal);
     ledcWrite(bluePWMChannel, bluVal);
-    ledcWrite(whitePWMChannel, 35);
+    ledcWrite(whitePWMChannel, 55);
 
     delay(wait); // Pause for 'wait' milliseconds before resuming the loop
 
