@@ -365,11 +365,8 @@ void setup()
         
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
       if ( (strcmp(device_name, rainbowWord) == 0) ) {
-      Serial.println("Rainbow switched on by Alexa");
-        Serial.println(state);
         if (state) {
         isRainbow = true;
-        Serial.print("rainbow is true");
       }
         else {
             isRainbow = false; 
@@ -380,11 +377,8 @@ void setup()
         }
 
       if ( (strcmp(device_name, redWord) == 0) ) {
-      Serial.println("Red switched on by Alexa");
         if (state) {
-        Serial.println(state);
         isRed = true;
-        Serial.println("red is true");
       }
         else {
             isRed = false; 
@@ -395,10 +389,8 @@ void setup()
         }
 
       if ( (strcmp(device_name, greenWord) == 0) ) {
-      Serial.println("Green switched on by Alexa");
         if (state) {
         isGreen = true;
-        Serial.println("green is true");
       }
         else {
             isGreen = false; 
@@ -409,10 +401,8 @@ void setup()
         }
 
       if ( (strcmp(device_name, blueWord) == 0) ) {
-      Serial.println("Blue switched on by Alexa");
         if (state) {
         isBlue = true;
-        Serial.println("blue is true");
       }
         else {
             isBlue = false; 
@@ -423,10 +413,8 @@ void setup()
         }
 
     if ( (strcmp(device_name, whiteWord) == 0) ) {
-      Serial.println("White switched on by Alexa");
         if (state) {
         isWhite = true;
-        Serial.println("white is true");
       }
         else {
             isWhite = false; 
@@ -438,10 +426,8 @@ void setup()
 
     if ( (strcmp(device_name, warmWhiteWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("warm white switched on by Alexa");
         if (state) {
         isWarmWhite = true;
-        Serial.println("warm white is true");
       }
         else {
           isWarmWhite = false;
@@ -453,10 +439,8 @@ void setup()
 
     if ( (strcmp(device_name, cyanWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("Cyan switched on by Alexa");
         if (state) {
         isCyan = true;
-        Serial.println("cyan is true");
       }
         else {
           isCyan = false;
@@ -468,10 +452,8 @@ void setup()
 
     if ( (strcmp(device_name, purpleWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("Purple switched on by Alexa");
         if (state) {
         isPurple = true;
-        Serial.println("purple is true");
       }
         else {
           isPurple = false;
@@ -483,10 +465,8 @@ void setup()
 
     if ( (strcmp(device_name, pinkWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("pink switched on by Alexa");
         if (state) {
         isPink = true;
-        Serial.println("pink is true");
       }
         else {
           isPink = false;
@@ -498,10 +478,8 @@ void setup()
 
     if ( (strcmp(device_name, orangeWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("orange switched on by Alexa");
         if (state) {
         isOrange = true;
-        Serial.println("orange is true");
       }
         else {
           isOrange = false;
@@ -513,10 +491,8 @@ void setup()
 
     if ( (strcmp(device_name, yellowWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("yellow switched on by Alexa");
         if (state) {
         isYellow = true;
-        Serial.println("yellow is true");
       }
         else {
           isYellow = false;
@@ -528,10 +504,8 @@ void setup()
 
     if ( (strcmp(device_name, pastelRainbowWord) == 0) ) {
       // this just sets a variable that the main loop() does something about
-      Serial.println("pastel rainbow switched on by Alexa");
         if (state) {
         isPastelRainbow = true;
-        Serial.println("pastel rainbow is true");
       }
         else {
           isPastelRainbow = false;
@@ -540,10 +514,6 @@ void setup()
       else {
           isPastelRainbow = false;
         }
-
-
-
-   
   });
 
 
@@ -574,30 +544,6 @@ void loop()
 
   buttonLogic(); //Button Logic
 
-
-  //Booleans for checking if alexa/button has activated a certain color/pattern
-
-  //  if (isRainbow == true) {
-	 // Serial.println("Rainbow is true");
-  //  }
- 
-  //  if (isRed == true) {
-  //  	Serial.println("red is true");
-  //  }
-
-
-  //  else if (isGreen == true) {
-  //  	Serial.println("green is true");
-  //  }
-
-  //   else if (isBlue == true) {
-  //  	Serial.println("blue is true");
-  //  }
-
-  //  else {
-  //  	Serial.println("black is black");
-
-  //  }
 
 
  
@@ -807,14 +753,6 @@ void loop()
 
   else {
   	color("black");
-  	Serial.println("color is set to black");
-  	if (isRainbow){
-  		Serial.println("rainbow is true");
-  	}
-
-  	else {
-  		Serial.println("rainbow is false");
-  	}
   }
 
   if (repeat) { // Do we loop a finite number of times?
