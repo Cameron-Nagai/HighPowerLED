@@ -665,14 +665,6 @@ void loop()
       isPink = false;
     isOrange = false;
     isYellow = false;
-
-    if (lastState[0] == true) {
-      Serial.println("last rainbow state is true");
-    }
-
-    else if (lastState[0] == false) {
-      Serial.println("last rainbow state is false");
-    }
     
       crossFade(red);
       crossFade(green);
