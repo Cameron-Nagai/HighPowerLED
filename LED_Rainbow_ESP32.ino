@@ -144,751 +144,32 @@ int wait = 10;
 int hold = 0;       // Optional hold when a color is complete, before the next crossFade
 int DEBUG = 1;      // DEBUG counter; if set to 1, will write values back via serial
 int loopCount = 60; // How often should DEBUG report?
-int repeat = 0;     // How many times should we loop before stopping? (0 for no stop)
-int j = 0;          // Loop counter for repeat
  
 // Initialize color variables
 int prevR = redVal;
 int prevG = grnVal;
 int prevB = bluVal;
- 
- 
- 
- 
- 
- 
-void buttonLogic() {
-  //Button Logic
-  buttonState = digitalRead(buttonPin);
- 
-// TODO implemnt button push wifi reset after 10 seconds
-//  WiFiManager wifiManager;
-//  //se o botão foi pressionado
-//   if ( digitalRead(buttonPin) == HIGH ) {
-//      Serial.println("resetar"); //tenta abrir o portal
-//      if(!wifiManager.startConfigPortal("ESP_AP", "12345678") ){
-//        Serial.println("Falha ao conectar");
-//        delay(2000);
-//        ESP.restart();
-//        delay(1000);
-//      }
-//      Serial.println("Conectou ESP_AP!!!");
-//   }
- 
-  if (buttonState != lastButtonState) {
-    // if the state has changed, increment the counter
-    if (buttonState == HIGH) {
- 
-      isRainbow = false;
-      isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-        isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-        isCyan = false;
-        isPurple = false;
-        isPink = false;
-      isOrange = false;
-      isYellow = false;
- 
- 
-      // if the current state is HIGH then the button went from off to on:
-      buttonPushCounter++;
-      if (buttonPushCounter > 12) {
-        buttonPushCounter = 0;
-      }
-      Serial.println("on");
-      Serial.print("number of button pushes: ");
-      Serial.println(buttonPushCounter);
- 
-    } else {
-      // if the current state is LOW then the button went from on to off:
-      Serial.println("off");
-    }
-    // Delay a little bit to avoid bouncing
-    delay(100);
-  }
-  // save the current state as the last state, for next time through the loop
-  lastButtonState = buttonState;
-  }
- 
-void alexaSetup() {
-  fauxmo.createServer(true); // not needed, this is the default value
-  fauxmo.setPort(80); // This is required for gen3 alexa devices
- 
-  // You have to call enable(true) once you have a WiFi connection
-  // You can enable or disable the library at any moment
-  // Disabling it will prevent the devices from being discovered and switched
-  fauxmo.enable(true);
-  Serial.println("fauxmo enabled");
-  // You can use different ways to invoke alexa to modify the devices state:
-  // "Alexa, turn "color" on"
-  // "Alexa, turn " color off"
- 
-  // Add virtual devices
-  fauxmo.addDevice(rainbowWord);
-  fauxmo.addDevice(pastelRainbowWord);
-  fauxmo.addDevice(redWord);
-  fauxmo.addDevice(greenWord);
-  fauxmo.addDevice(blueWord);
-  fauxmo.addDevice(whiteWord);
-  fauxmo.addDevice(warmWhiteWord);
-  fauxmo.addDevice(cyanWord);
-  fauxmo.addDevice(purpleWord);
-  fauxmo.addDevice(pinkWord);
-  fauxmo.addDevice(orangeWord);
-  fauxmo.addDevice(yellowWord);
-  fauxmo.addDevice(pyramidOnWord);
- 
- 
- 
- 
-  Serial.println("devices enabled");
-}
- 
-void configModeCallback (ESP_WiFiManager *myESP_WiFiManager) {
- 
-  Serial.print("Entered config mode with ");
-  Serial.println("AP_SSID : " + myESP_WiFiManager->getConfigPortalSSID() + " and AP_PASS = " + myESP_WiFiManager->getConfigPortalPW());
- 
-  Serial.println(WiFi.softAPIP());
-}
- 
-void saveConfigCallback (void) {
-//  Serial.println("Should save config");
-  wifiSaved = true;
-  Serial.println ("Configuration saved");
-  Serial.println ("local ip" + WiFi.localIP());
-  Serial.println ("ap ip " + WiFi.softAPIP ()); // print the IP of the AP
- 
-}
- 
- 
-// Wi-Fi Connection
-void wifiSetup() {
-    Serial.println("\nStarting AutoConnectWithFeedBack");
- 
-  // Use this to default DHCP hostname to ESP8266-XXXXXX or ESP32-XXXXXX
-  //ESP_WiFiManager ESP_wifiManager;
-  // Use this to personalize DHCP hostname (RFC952 conformed)
-  ESP_WiFiManager ESP_wifiManager("CameronHighPowerLED");
- 
-  //reset settings - for testing
-  //ESP_wifiManager.resetSettings();
- 
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  ESP_wifiManager.setAPCallback(configModeCallback);
-  ESP_wifiManager.setSaveConfigCallback(saveConfigCallback);
- 
-  ESP_wifiManager.setDebugOutput(true);
- 
-  //set custom ip for portal
-  ESP_wifiManager.setAPStaticIPConfig(IPAddress(42, 42, 42, 42), IPAddress(42, 42, 42, 42), IPAddress(255, 255, 255, 0));
- 
-  ESP_wifiManager.setMinimumSignalQuality(-1);
-  // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5+
-//  ESP_wifiManager.setSTAStaticIPConfig(IPAddress(192, 168, 86, 114), IPAddress(192, 168, 86, 1), IPAddress(255, 255, 255, 0));
- 
-  // We can't use WiFi.SSID() in ESP32 as it's only valid after connected.
-  // SSID and Password stored in ESP32 wifi_ap_record_t and wifi_config_t are also cleared in reboot
-  // Have to create a new function to store in EEPROM/SPIFFS for this purpose
-  Router_SSID = ESP_wifiManager.WiFi_SSID();
-  Router_Pass = ESP_wifiManager.WiFi_Pass();
- 
-  //Remove this line if you do not want to see WiFi password printed
-  Serial.println("Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
- 
-  if (Router_SSID != "")
-  {
-    ESP_wifiManager.setConfigPortalTimeout(1); //If no access point name has been previously entered disable timeout.
-    Serial.println("Got stored Credentials. Timeout 1s");
-  }
-  else
-  {
-    Serial.println("No stored Credentials. No timeout");
-  }
- 
-  String chipID = String(ESP_getChipId(), HEX);
-  chipID.toUpperCase();
- 
-  // SSID and PW for Config Portal
-  AP_SSID = "HIghPowerLED-" + chipID;
-  AP_PASS = "";
- 
-  // Get Router SSID and PASS from EEPROM, then open Config portal AP named "ESP_XXXXXX_AutoConnectAP" and PW "MyESP_XXXXXX"
-  // 1) If got stored Credentials, Config portal timeout is 60s
-  // 2) If no stored Credentials, stay in Config portal until get WiFi Credentials
-  ESP_wifiManager.autoConnect(AP_SSID.c_str(), AP_PASS.c_str());
-  //or use this for Config portal AP named "ESP_XXXXXX" and NULL password
-  //ESP_wifiManager.autoConnect();
- 
-  //if you get here you have connected to the WiFi
-  Serial.println("WiFi connected");
- 
-}
-//  // Set WIFI module to STA mode
-//  WiFi.mode(WIFI_STA);
-//
-//  // Connect
-//  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
-//  WiFi.begin(WIFI_SSID, WIFI_PASS);
-//
-//  // Wait
-//  while (WiFi.status() != WL_CONNECTED) {
-//    Serial.print(".");
-//    delay(100);
-//  }
-//  Serial.println();
-//
-//  // Connected!
-//  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n",
-//    WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
- 
-void resetLastState() {
-  for (int i = 0; i < 12; i++) {
-    lastState[i] = false;
-  }
-}
- 
- 
-void setup()
-{
- 
-  pinMode(buttonPin, INPUT);
- 
-  Serial.begin(9600);  // ...set up the serial ouput
- 
-  // Wi-Fi connection
-  wifiSetup();
-  delay(1000);
-  // Alexa setup
-  alexaSetup();
- 
- 
- 
-  fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
-    buttonPushCounter = 0;
-    // Callback when a command from Alexa is received.
-    // You can use device_id or device_name to choose the element to perform an action onto (relay, LED,...)
-    // State is a boolean (ON/OFF) and value a number from 0 to 255 (if you say "set kitchen light to 50%" you will receive a 128 here).
-    // Just remember not to delay too much here, this is a callback, exit as soon as possible.
-    // If you have to do something more involved here set a flag and process it in your main loop.
-       
-    Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
-       
-   
-    if ( (strcmp(device_name, rainbowWord) == 0) ) {
-        if (state) {
-        resetLastState();
-        isRainbow = true;
-      }
-        else {
-            isRainbow = false;
-          }
-    }
-      else {
-          isRainbow = false;
-        }
- 
-      if ( (strcmp(device_name, redWord) == 0) ) {
-        if (state) {
-        resetLastState();
-        isRed = true;
-      }
-        else {
-            isRed = false;
-          }
-    }
-    else {
-          isRed = false;
-        }
- 
-      if ( (strcmp(device_name, greenWord) == 0) ) {
-        if (state) {
-        resetLastState();
-        isGreen = true;
-      }
-        else {
-            isGreen = false;
-          }
-    }
-      else {
-          isGreen = false;
-        }
- 
-      if ( (strcmp(device_name, blueWord) == 0) ) {
-        if (state) {
-        resetLastState();
-        isBlue = true;
-      }
-        else {
-            isBlue = false;
-          }  
-    }
-      else {
-          isBlue = false;
-        }
- 
-    if ( (strcmp(device_name, whiteWord) == 0) ) {
-        if (state) {
-        resetLastState();
-        isWhite = true;
-      }
-        else {
-            isWhite = false;
-          }  
-    }
-      else {
-          isWhite = false;
-        }
- 
-    if ( (strcmp(device_name, warmWhiteWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isWarmWhite = true;
-      }
-        else {
-          isWarmWhite = false;
-        }
-    }
-      else {
-          isWarmWhite = false;
-        }
- 
-    if ( (strcmp(device_name, cyanWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isCyan = true;
-      }
-        else {
-          isCyan = false;
-        }
-    }
-      else {
-          isCyan = false;
-        }
- 
-    if ( (strcmp(device_name, purpleWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isPurple = true;
-      }
-        else {
-          isPurple = false;
-        }
-    }
-      else {
-          isPurple = false;
-        }
- 
-    if ( (strcmp(device_name, pinkWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isPink = true;
-      }
-        else {
-          isPink = false;
-        }
-    }
-      else {
-          isPink = false;
-        }
- 
-    if ( (strcmp(device_name, orangeWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isOrange = true;
-      }
-        else {
-          isOrange = false;
-        }
-    }
-      else {
-          isOrange = false;
-        }
- 
-    if ( (strcmp(device_name, yellowWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isYellow = true;
-      }
-        else {
-          isYellow = false;
-        }
-    }
-      else {
-          isYellow = false;
-        }
- 
-    if ( (strcmp(device_name, pastelRainbowWord) == 0) ) {
-      // this just sets a variable that the main loop() does something about
-        if (state) {
-        resetLastState();
-        isPastelRainbow = true;
-      }
-        else {
-          isPastelRainbow = false;
-        }
-    }
-      else {
-          isPastelRainbow = false;
-        }
 
-     if ( (strcmp(device_name, pyramidOnWord) == 0) ) {
-        if (state) {
-          if (lastState[0] == true) {
-              isRainbow = true;
-              resetLastState();
-          }
-          else if (lastState[1] == true) {
-              isPastelRainbow = true;
-          }
+enum colorState {
+  BLACK,
+  RAINBOW, 
+  PASTELRAINBOW, 
+  RED, 
+  GREEN, 
+  BLUE, 
+  WHITE, 
+  WARMWHITE,
+  CYAN, 
+  PURPLE, 
+  PINK, 
+  ORANGE, 
+  YELLOW
 
-          else if (lastState[2] == true) {
-              isRed = true; 
-              resetLastState();
-          }
+};
 
-          else if (lastState[3] == true) {
-              isGreen = true;
-              resetLastState(); 
-          }
+colorState colorSwitch = RAINBOW;
 
-          else if (lastState[4] == true) {
-              isBlue = true; 
-              resetLastState();
-          }
 
-          else if (lastState[5] == true) {
-              isWhite = true; 
-              resetLastState();
-          }
-
-          else if (lastState[6] == true) {
-              isWarmWhite = true;
-              resetLastState(); 
-          }
-
-          else if (lastState[7] == true) {
-              isCyan = true; 
-              resetLastState();
-          }
-
-          else if (lastState[8] == true) {
-              isPurple = true; 
-              resetLastState();
-          }
-         
-          else if (lastState[9] == true) {
-              isPink = true; 
-              resetLastState();
-          }
-
-          else if (lastState[10] == true) {
-              isOrange = true; 
-              resetLastState();
-          }
-
-          else if (lastState[11] == true) {
-              isYellow = true; 
-              resetLastState();
-          }
-        }
-        else if (!state) {
-      isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isRainbow = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPurple = false;
-      isOrange = false;
-      isYellow = false;
-      
-        }
-      }
-  });
- 
- 
- 
- 
-  // Set up the LED outputs
-  ledcSetup(redPWMChannel, freq, resolution);   //Configures PWM Channels for LEDs (1 different pwm channel per led)
-  ledcSetup(greenPWMChannel, freq, resolution);  
-  ledcSetup(bluePWMChannel, freq, resolution);  
-  ledcSetup(whitePWMChannel, freq, resolution);  
- 
-  ledcAttachPin(redPin, redPWMChannel);         //Assigns pins to pwm channels
-  ledcAttachPin(grnPin, greenPWMChannel);
-  ledcAttachPin(bluPin, bluePWMChannel);
-  ledcAttachPin(whitePin, whitePWMChannel);
- 
- 
- 
- 
-}
- 
-// Main program
-void loop()
-{
- 
-  fauxmo.handle();   //Alexa discovery
- 
- 
-  buttonLogic(); //Button Logic
- 
- 
- 
- 
- 
-//runs color/pattern if booleans are true or button is pressed a certain amount of times
-  if (isRainbow == true || buttonPushCounter == 1) {
-    
-    lastState[0] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPurple = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-    
-      crossFade(red);
-      crossFade(green);
-      crossFade(blue);
-      crossFade(yellow);
- 
-  Serial.println("color set to rainbow");
-  }
- 
-  if (isPastelRainbow == true || buttonPushCounter == 2) {
-
-    lastState[1] = true;
-    isRainbow = false;
-    isRed = false;
-    isGreen = false;
-    isBlue = false;
-    isWhite = false;
-    isWarmWhite = false;
-    isCyan = false;
-    isPurple = false;
-    isPink = false;
-    isOrange = false;
-    isYellow = false;
-    pastelCrossFade(red);
-    pastelCrossFade(green);
-    pastelCrossFade(blue);
-    pastelCrossFade(yellow);
- 
-  Serial.println("color set to pastel rainbow");
-  }
- 
-  else if (isRed == true || buttonPushCounter == 3) {
-
-    lastState[2] = true;
-      isRainbow = false;
-    isPastelRainbow = false;
-      isGreen = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-    isCyan = false;
-    isPurple = false;
-    isPink = false;
-    isOrange = false;
-    isYellow = false;
-    color("red");
-  // Serial.println("color set to red");
-  }
- 
-  else if (isGreen == true || buttonPushCounter == 4) {
-
-    lastState[3] = true;
-      isRed = false;
-    isPastelRainbow = false;
-      isRainbow = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPurple = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-      color("green");
-  // Serial.println("color set to green");
- 
-  }
- 
-  else if (isBlue == true || buttonPushCounter == 5) {
-
-    lastState[4] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isRainbow = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPurple = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-      color ("blue");
-  // Serial.println("color set to blue");
- 
-  }
- 
-  else if (isWhite == true || buttonPushCounter == 6) {
-
-    lastState[5] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isRainbow = false;
-      isBlue = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPurple = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-      color ("white");
- 
-  }
- 
-  else if (isWarmWhite == true || buttonPushCounter == 7) {
-
-    lastState[6] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isBlue = false;
-      isRainbow = false;
-      isWhite = false;
-      isCyan = false;
-      isPurple = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-      color ("warmwhite");
- 
-  }
- 
-  else if (isCyan == true || buttonPushCounter == 8) {
-
-    lastState[7] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isRainbow = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isPurple = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-      color ("cyan");
- 
-  }
- 
-    else if (isPurple == true || buttonPushCounter == 9) {
-
-    lastState[8] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isRainbow = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPink = false;
-    isOrange = false;
-    isYellow = false;
-      color ("purple");
-  }
- 
-  else if (isPink == true || buttonPushCounter == 10) {
-
-    lastState[9] = true;
-    isPastelRainbow = false;
-      isRed = false;
-      isGreen = false;
-      isRainbow = false;
-      isBlue = false;
-      isWhite = false;
-      isWarmWhite = false;
-      isCyan = false;
-      isPurple = false;
-    isOrange = false;
-    isYellow = false;
-      color ("pink");
- 
-  }
- 
-  else if (isOrange == true || buttonPushCounter == 11) {
-
-    lastState[10] = true;
-    isPastelRainbow = false;
-    isRed = false;
-    isGreen = false;
-    isRainbow = false;
-    isBlue = false;
-    isWhite = false;
-    isWarmWhite = false;
-    isCyan = false;
-    isPurple = false;
-    isYellow = false;
-    color ("orange");
- 
-  }
- 
-  else if (isYellow == true || buttonPushCounter == 12) {
-
-    lastState[11] = true;
-    isPastelRainbow = false;
-    isRed = false;
-    isGreen = false;
-    isRainbow = false;
-    isBlue = false;
-    isWhite = false;
-    isWarmWhite = false;
-    isCyan = false;
-    isPurple = false;
-    isOrange = false;
-    color ("yellow");
- 
-  }
- 
- 
-//display black if none of the booleans are true
- 
-  else {
-    color("black");
-  }
- 
-  if (repeat) { // Do we loop a finite number of times?
-    j += 1;
-    if (j >= repeat) { // Are we there yet?
-      exit(j);         // If so, stop.
-    }
-  }
-}
  
 /* BELOW THIS LINE IS THE MATH -- YOU SHOULDN'T NEED TO CHANGE THIS FOR THE BASICS
 *
@@ -918,6 +199,7 @@ void loop()
 * and then divides that gap by 1020 to determine the size of the step  
 * between adjustments in the value.
 */
+
  
 int calculateStep(int prevValue, int endValue) {
   int step = endValue - prevValue; // What's the overall gap?
@@ -958,6 +240,69 @@ int calculateVal(int step, int val, int i) {
 *  the value needs to be updated each time, then writing
 *  the color values to the correct pins.
 */
+
+void resetLastState() {
+  for (int i = 0; i < 12; i++) {
+    lastState[i] = false;
+  }
+}
+
+void buttonLogic() {
+  //Button Logic
+  buttonState = digitalRead(buttonPin);
+ 
+// TODO implemnt button push wifi reset after 10 seconds
+//  WiFiManager wifiManager;
+//  //se o botão foi pressionado
+//   if ( digitalRead(buttonPin) == HIGH ) {
+//      Serial.println("resetar"); //tenta abrir o portal
+//      if(!wifiManager.startConfigPortal("ESP_AP", "12345678") ){
+//        Serial.println("Falha ao conectar");
+//        delay(2000);
+//        ESP.restart();
+//        delay(1000);
+//      }
+//      Serial.println("Conectou ESP_AP!!!");
+//   }
+ 
+  if (buttonState != lastButtonState) {
+    // if the state has changed, increment the counter
+    if (buttonState == HIGH) {
+      resetLastState();
+ 
+      // isRainbow = false;
+      // isPastelRainbow = false;
+      // isRed = false;
+      // isGreen = false;
+      //   isBlue = false;
+      // isWhite = false;
+      // isWarmWhite = false;
+      //   isCyan = false;
+      //   isPurple = false;
+      //   isPink = false;
+      // isOrange = false;
+      // isYellow = false;
+ 
+ 
+      // if the current state is HIGH then the button went from off to on:
+      buttonPushCounter++;
+      if (buttonPushCounter > 12) {
+        buttonPushCounter = 0;
+      }
+      Serial.println("on");
+      Serial.print("number of button pushes: ");
+      Serial.println(buttonPushCounter);
+ 
+    } else {
+      // if the current state is LOW then the button went from on to off:
+      Serial.println("off");
+    }
+    // Delay a little bit to avoid bouncing
+    delay(100);
+  }
+  // save the current state as the last state, for next time through the loop
+  lastButtonState = buttonState;
+  }
  
 void color(String color) {
  
@@ -1053,7 +398,7 @@ void color(String color) {
   }
  
 }
- 
+
 void crossFade(int color[3]) {
  
    
@@ -1161,3 +506,513 @@ void pastelCrossFade(int color[3]) {
   prevB = bluVal;
   delay(hold); // Pause for optional 'wait' milliseconds before resuming the loop
 }
+
+
+ 
+void colorState() {
+  switch (buttonPushCounter) {
+    case 1:
+      lastState[0] = true;
+      crossFade(red);
+      crossFade(green);
+      crossFade(blue);
+      crossFade(yellow);
+      break;
+    case 2:
+      lastState[1] = true;
+      pastelCrossFade(red);
+      pastelCrossFade(green);
+      pastelCrossFade(blue);
+      pastelCrossFade(yellow);
+      break;
+    case 3:
+      lastState[2] = true;
+      color("red");
+      break;
+    case 4:
+      lastState[3] = true;
+      color("green");
+      break;
+    case 5:
+      lastState[4] = true;
+      color("blue");
+      break;
+    case 6:
+      lastState[5] = true;
+      color("white");
+      break;
+    case 7:
+      lastState[6] = true;
+      color("warmwhite");
+      break;
+    case 8:
+      lastState[7] = true;
+      color("cyan");
+      break;
+    case 9:
+      lastState[8] = true;
+      color("purple");
+      break;
+    case 10:
+      lastState[9] = true;
+      color("green");
+      break;
+    case 11:
+    lastState[10] = true;  
+      color("orange");
+      break;
+    case 12:
+      lastState[11] = true;
+      color("yellow");
+      break;
+    case 13:
+      color("black");
+      break;  
+  }
+
+  switch (colorSwitch) {
+    case BLACK:
+      color("black");
+      break;
+    case RAINBOW:
+      lastState[0] = true;
+      crossFade(red);
+      crossFade(green);
+      crossFade(blue);
+      crossFade(yellow);
+      break;
+    case PASTELRAINBOW:
+      lastState[1] = true;
+      pastelCrossFade(red);
+      pastelCrossFade(green);
+      pastelCrossFade(blue);
+      pastelCrossFade(yellow);
+      break;
+    case RED:
+      lastState[2] = true;
+      color("red");
+      break;
+    case GREEN:
+      lastState[3] = true;
+      color("green");
+      break;
+    case BLUE:
+      lastState[4] = true;
+      color("blue");
+      break;
+    case WHITE:
+      lastState[5] = true;
+      color("white");
+      break;
+    case WARMWHITE:
+      lastState[6] = true;
+      color("warmwhite");
+      break;
+    case CYAN:
+      lastState[7] = true;
+      color("cyan");
+      break;
+    case PURPLE:
+      lastState[8] = true;
+      color("purple");
+      break;
+    case PINK:
+      lastState[9] = true;
+      color("green");
+      break;
+    case ORANGE:
+      lastState[10] = true;
+      color("orange");
+      break;
+    case YELLOW:
+      lastState[11] = true;
+      color("yellow");
+      break;
+  }
+}
+ 
+void alexaSetup() {
+  fauxmo.createServer(true); // not needed, this is the default value
+  fauxmo.setPort(80); // This is required for gen3 alexa devices
+ 
+  // You have to call enable(true) once you have a WiFi connection
+  // You can enable or disable the library at any moment
+  // Disabling it will prevent the devices from being discovered and switched
+  fauxmo.enable(true);
+  Serial.println("fauxmo enabled");
+  // You can use different ways to invoke alexa to modify the devices state:
+  // "Alexa, turn "color" on"
+  // "Alexa, turn " color off"
+ 
+  // Add virtual devices
+  fauxmo.addDevice(rainbowWord);
+  fauxmo.addDevice(pastelRainbowWord);
+  fauxmo.addDevice(redWord);
+  fauxmo.addDevice(greenWord);
+  fauxmo.addDevice(blueWord);
+  fauxmo.addDevice(whiteWord);
+  fauxmo.addDevice(warmWhiteWord);
+  fauxmo.addDevice(cyanWord);
+  fauxmo.addDevice(purpleWord);
+  fauxmo.addDevice(pinkWord);
+  fauxmo.addDevice(orangeWord);
+  fauxmo.addDevice(yellowWord);
+  fauxmo.addDevice(pyramidOnWord);
+  Serial.println("devices enabled");
+}
+ 
+void configModeCallback (ESP_WiFiManager *myESP_WiFiManager) {
+ 
+  Serial.print("Entered config mode with ");
+  Serial.println("AP_SSID : " + myESP_WiFiManager->getConfigPortalSSID() + " and AP_PASS = " + myESP_WiFiManager->getConfigPortalPW());
+ 
+  Serial.println(WiFi.softAPIP());
+}
+ 
+void saveConfigCallback (void) {
+//  Serial.println("Should save config");
+  wifiSaved = true;
+  Serial.println ("Configuration saved");
+  Serial.println ("local ip" + WiFi.localIP());
+  Serial.println ("ap ip " + WiFi.softAPIP ()); // print the IP of the AP
+ 
+}
+ 
+ 
+// Wi-Fi Connection
+void wifiSetup() {
+    Serial.println("\nStarting AutoConnectWithFeedBack");
+ 
+  // Use this to default DHCP hostname to ESP8266-XXXXXX or ESP32-XXXXXX
+  //ESP_WiFiManager ESP_wifiManager;
+  // Use this to personalize DHCP hostname (RFC952 conformed)
+  ESP_WiFiManager ESP_wifiManager("CameronHighPowerLED");
+ 
+  //reset settings - for testing
+  //ESP_wifiManager.resetSettings();
+ 
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  ESP_wifiManager.setAPCallback(configModeCallback);
+  ESP_wifiManager.setSaveConfigCallback(saveConfigCallback);
+ 
+  ESP_wifiManager.setDebugOutput(true);
+ 
+  //set custom ip for portal
+  ESP_wifiManager.setAPStaticIPConfig(IPAddress(42, 42, 42, 42), IPAddress(42, 42, 42, 42), IPAddress(255, 255, 255, 0));
+ 
+  ESP_wifiManager.setMinimumSignalQuality(-1);
+  // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5+
+//  ESP_wifiManager.setSTAStaticIPConfig(IPAddress(192, 168, 86, 114), IPAddress(192, 168, 86, 1), IPAddress(255, 255, 255, 0));
+ 
+  // We can't use WiFi.SSID() in ESP32 as it's only valid after connected.
+  // SSID and Password stored in ESP32 wifi_ap_record_t and wifi_config_t are also cleared in reboot
+  // Have to create a new function to store in EEPROM/SPIFFS for this purpose
+  Router_SSID = ESP_wifiManager.WiFi_SSID();
+  Router_Pass = ESP_wifiManager.WiFi_Pass();
+ 
+  //Remove this line if you do not want to see WiFi password printed
+  Serial.println("Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
+ 
+  if (Router_SSID != "")
+  {
+    ESP_wifiManager.setConfigPortalTimeout(1); //If no access point name has been previously entered disable timeout.
+    Serial.println("Got stored Credentials. Timeout 1s");
+  }
+  else
+  {
+    Serial.println("No stored Credentials. No timeout");
+  }
+ 
+  String chipID = String(ESP_getChipId(), HEX);
+  chipID.toUpperCase();
+ 
+  // SSID and PW for Config Portal
+  AP_SSID = "HIghPowerLED-" + chipID;
+  AP_PASS = "";
+ 
+  // Get Router SSID and PASS from EEPROM, then open Config portal AP named "ESP_XXXXXX_AutoConnectAP" and PW "MyESP_XXXXXX"
+  // 1) If got stored Credentials, Config portal timeout is 60s
+  // 2) If no stored Credentials, stay in Config portal until get WiFi Credentials
+  ESP_wifiManager.autoConnect(AP_SSID.c_str(), AP_PASS.c_str());
+  //or use this for Config portal AP named "ESP_XXXXXX" and NULL password
+  //ESP_wifiManager.autoConnect();
+ 
+  //if you get here you have connected to the WiFi
+  Serial.println("WiFi connected");
+ 
+}
+//  // Set WIFI module to STA mode
+//  WiFi.mode(WIFI_STA);
+//
+//  // Connect
+//  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
+//  WiFi.begin(WIFI_SSID, WIFI_PASS);
+//
+//  // Wait
+//  while (WiFi.status() != WL_CONNECTED) {
+//    Serial.print(".");
+//    delay(100);
+//  }
+//  Serial.println();
+//
+//  // Connected!
+//  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n",
+//    WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+ 
+
+ 
+ 
+void setup()
+{
+ 
+  pinMode(buttonPin, INPUT);
+ 
+  Serial.begin(9600);  // ...set up the serial ouput
+ 
+  // Wi-Fi connection
+  wifiSetup();
+  delay(1000);
+  // Alexa setup
+  alexaSetup();
+ 
+ 
+ 
+  fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
+    buttonPushCounter = 0;
+    // Callback when a command from Alexa is received.
+    // You can use device_id or device_name to choose the element to perform an action onto (relay, LED,...)
+    // State is a boolean (ON/OFF) and value a number from 0 to 255 (if you say "set kitchen light to 50%" you will receive a 128 here).
+    // Just remember not to delay too much here, this is a callback, exit as soon as possible.
+    // If you have to do something more involved here set a flag and process it in your main loop.
+       
+    Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
+       
+       if ( (strcmp(device_name, pyramidOnWord) == 0) ) {
+        if (state) {
+          if (lastState[0] == true) {
+              colorSwitch = RAINBOW;
+              resetLastState();
+          }
+          else if (lastState[1] == true) {
+              colorSwitch = PASTELRAINBOW;
+              resetLastState();
+          }
+
+          else if (lastState[2] == true) {
+              colorSwitch = RED;
+              isRed = true; 
+              resetLastState();
+          }
+
+          else if (lastState[3] == true) {
+              colorSwitch = GREEN;
+              resetLastState(); 
+          }
+
+          else if (lastState[4] == true) {
+              colorSwitch = BLUE; 
+              resetLastState();
+          }
+
+          else if (lastState[5] == true) {
+              colorSwitch = WHITE;
+              resetLastState();
+          }
+
+          else if (lastState[6] == true) {
+              colorSwitch = WARMWHITE;
+              resetLastState(); 
+          }
+
+          else if (lastState[7] == true) {
+              colorSwitch = CYAN;
+              resetLastState();
+          }
+
+          else if (lastState[8] == true) {
+              colorSwitch = PURPLE;
+              resetLastState();
+          }
+         
+          else if (lastState[9] == true) {
+              colorSwitch = PINK; 
+              resetLastState();
+          }
+
+          else if (lastState[10] == true) {
+              colorSwitch = ORANGE;
+              resetLastState();
+          }
+
+          else if (lastState[11] == true) {
+              colorSwitch = YELLOW;
+              resetLastState();
+          }
+        }
+
+        else {
+          colorSwitch = BLACK;
+        }
+      }
+   
+      else if ( (strcmp(device_name, rainbowWord) == 0) ) {
+        if (state) {
+        resetLastState();
+        colorSwitch = RAINBOW;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+
+      else if ( (strcmp(device_name, redWord) == 0) ) {
+        if (state) {
+        resetLastState();
+        colorSwitch = RED;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+
+      else if ( (strcmp(device_name, greenWord) == 0) ) {
+        if (state) {
+        resetLastState();
+        colorSwitch = GREEN;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+      else if ( (strcmp(device_name, blueWord) == 0) ) {
+        if (state) {
+        resetLastState();
+        colorSwitch = BLUE;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, whiteWord) == 0) ) {
+        if (state) {
+        resetLastState();
+        colorSwitch = WHITE;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, warmWhiteWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = WARMWHITE;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, cyanWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = CYAN;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, purpleWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = PURPLE;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, pinkWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = PINK;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, orangeWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = ORANGE;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, yellowWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = YELLOW;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+ 
+    else if ( (strcmp(device_name, pastelRainbowWord) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+        if (state) {
+        resetLastState();
+        colorSwitch = PASTELRAINBOW;
+      }
+        else {
+            colorSwitch = BLACK;
+          }
+        }
+
+     
+  });
+ 
+ 
+ 
+ 
+  // Set up the LED outputs
+  ledcSetup(redPWMChannel, freq, resolution);   //Configures PWM Channels for LEDs (1 different pwm channel per led)
+  ledcSetup(greenPWMChannel, freq, resolution);  
+  ledcSetup(bluePWMChannel, freq, resolution);  
+  ledcSetup(whitePWMChannel, freq, resolution);  
+ 
+  ledcAttachPin(redPin, redPWMChannel);         //Assigns pins to pwm channels
+  ledcAttachPin(grnPin, greenPWMChannel);
+  ledcAttachPin(bluPin, bluePWMChannel);
+  ledcAttachPin(whitePin, whitePWMChannel);
+ 
+ 
+ 
+ 
+}
+ 
+// Main program
+void loop()
+{
+ 
+  fauxmo.handle();   //Alexa discovery
+  buttonLogic(); //Button Logic
+  colorState(); //Color Change Logic
+ }
+ 
+ 
+ 
+ 
