@@ -270,23 +270,10 @@ void buttonLogic() {
     if (buttonState == HIGH) {
       resetLastState();
  
-      // isRainbow = false;
-      // isPastelRainbow = false;
-      // isRed = false;
-      // isGreen = false;
-      //   isBlue = false;
-      // isWhite = false;
-      // isWarmWhite = false;
-      //   isCyan = false;
-      //   isPurple = false;
-      //   isPink = false;
-      // isOrange = false;
-      // isYellow = false;
- 
  
       // if the current state is HIGH then the button went from off to on:
       buttonPushCounter++;
-      if (buttonPushCounter > 12) {
+      if (buttonPushCounter > 13) {
         buttonPushCounter = 0;
       }
       Serial.println("on");
@@ -411,7 +398,7 @@ void crossFade(int color[3]) {
   int stepG = calculateStep(prevG, G);
   int stepB = calculateStep(prevB, B);
  
-  for (int i = 0; i <= 1020 && (isRainbow == true || buttonPushCounter == 1); i++) {
+  for (int i = 0; i <= 1020 && colorSwitch == RAINBOW || buttonPushCounter == 1; i++) {
    
     buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
     fauxmo.handle(); //Alexa discovery also has to be in the rainbow thread in order for discovery to work in the middle of rainbow pattern
@@ -465,7 +452,7 @@ void pastelCrossFade(int color[3]) {
   int stepG = calculateStep(prevG, G);
   int stepB = calculateStep(prevB, B);
  
-  for (int i = 0; i <= 1020 && (isPastelRainbow == true || buttonPushCounter == 1); i++) {
+  for (int i = 0; i <= 1020 && colorSwitch == PASTELRAINBOW || buttonPushCounter == 2; i++) {
    
     buttonLogic(); //button logic has to be in the rainbow thread in order to change in the middle of rainbow pattern
     fauxmo.handle(); //Alexa discovery also has to be in the rainbow thread in order for discovery to work in the middle of rainbow pattern
@@ -618,7 +605,7 @@ void colorState() {
       break;
     case PINK:
       lastState[9] = true;
-      color("green");
+      color("pink");
       break;
     case ORANGE:
       lastState[10] = true;
