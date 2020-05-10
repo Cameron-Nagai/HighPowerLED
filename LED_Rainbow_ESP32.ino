@@ -91,23 +91,6 @@ int lastButtonState = 0;     // previous state of the button
  
 int pastelWhiteValue = 0; //white led color value (used to turn on pastel mode)
  
-bool isRainbow = true;
-bool isPastelRainbow = false;
-bool isRed = false;
-bool isBlue = false;
-bool isGreen = false;
-bool isWhite = false;
-bool isWarmWhite = false;
-bool isCyan = false;
-bool isPurple = false;
-bool isPink = false;
-bool isYellow = false;
-bool isOrange = false;
- 
-//red is blue
-//green is green
- 
- 
 int redPin = 18;   // Red LED,   connected to digital pin 16
 int grnPin = 17;  // Green LED, connected to digital pin 17
 int bluPin = 16;  // Blue LED,  connected to digital pin 18
@@ -787,7 +770,6 @@ void setup()
 
           else if (lastState[2] == true) {
               colorSwitch = RED;
-              isRed = true; 
               resetLastState();
           }
 
